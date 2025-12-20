@@ -13,7 +13,10 @@ This is a starter Fastify REST API that follows a simple SOLID-ish structure:
 - **Brand**: `id`, `brandName`
 - **Product**: `id`, `productName`, `categoryId`, `brandId`, `price`, `shortDesc`, `longDesc`
 
-Database migration: `src/db/migrations/001_init.sql`
+Database:
+- **Database name**: `ecom`
+- **Schema name**: `catalog`
+- Migration: `src/db/migrations/001_init.sql`
 
 ### Quick start
 
