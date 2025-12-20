@@ -17,31 +17,31 @@ Database migration: `src/db/migrations/001_init.sql`
 
 ### Quick start
 
-1) Start Postgres:
+1) Start Postgres + API (Docker):
 
 ```bash
 docker compose up -d
 ```
 
-2) Configure env:
+2) (Optional) If running locally without Docker, configure env:
 
 ```bash
 cp .env.example .env
 ```
 
-3) Install deps:
+3) Install deps (local dev):
 
 ```bash
 npm install
 ```
 
-4) Run migrations:
+4) Run migrations (local dev):
 
 ```bash
 npm run migrate
 ```
 
-5) Start the API:
+5) Start the API (local dev):
 
 ```bash
 npm run dev
