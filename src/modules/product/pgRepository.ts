@@ -16,7 +16,7 @@ export class PgProductRepository implements ProductRepository {
       long_desc: string | null;
     }>(
       `
-      insert into catalog.products (product_name, category_id, brand_id, price, short_desc, long_desc)
+      insert into ecom.products (product_name, category_id, brand_id, price, short_desc, long_desc)
       values ($1, $2, $3, $4, $5, $6)
       returning id, product_name, category_id, brand_id, price, short_desc, long_desc
       `,
@@ -55,7 +55,7 @@ export class PgProductRepository implements ProductRepository {
     }>(
       `
       select id, product_name, category_id, brand_id, price, short_desc, long_desc
-      from catalog.products
+      from ecom.products
       where id = $1
       `,
       [id]
@@ -86,7 +86,7 @@ export class PgProductRepository implements ProductRepository {
     }>(
       `
       select id, product_name, category_id, brand_id, price, short_desc, long_desc
-      from catalog.products
+      from ecom.products
       order by product_name asc
       `
     );

@@ -15,7 +15,7 @@ This is a starter Fastify REST API that follows a simple SOLID-ish structure:
 
 Database:
 - **Database name**: `ecom`
-- **Schema name**: `catalog`
+- **Schema name**: `ecom`
 - Migration: `src/db/migrations/001_init.sql`
 
 ### Quick start

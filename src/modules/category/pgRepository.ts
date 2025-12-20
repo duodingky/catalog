@@ -10,7 +10,7 @@ export class PgCategoryRepository implements CategoryRepository {
       id: string;
       category_name: string;
     }>(
-      "insert into catalog.categories (category_name) values ($1) returning id, category_name",
+      "insert into ecom.categories (category_name) values ($1) returning id, category_name",
       [input.categoryName]
     );
 
@@ -23,7 +23,7 @@ export class PgCategoryRepository implements CategoryRepository {
     const res = await this.db.query<{
       id: string;
       category_name: string;
-    }>("select id, category_name from catalog.categories where id = $1", [id]);
+    }>("select id, category_name from ecom.categories where id = $1", [id]);
 
     const row = res.rows[0];
     if (!row) return null;
@@ -34,7 +34,7 @@ export class PgCategoryRepository implements CategoryRepository {
     const res = await this.db.query<{
       id: string;
       category_name: string;
-    }>("select id, category_name from catalog.categories order by category_name asc");
+    }>("select id, category_name from ecom.categories order by category_name asc");
 
     return res.rows.map((r) => ({ id: r.id, categoryName: r.category_name }));
   }

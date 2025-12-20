@@ -9,7 +9,7 @@ export class PgBrandRepository implements BrandRepository {
     const res = await this.db.query<{
       id: string;
       brand_name: string;
-    }>("insert into catalog.brands (brand_name) values ($1) returning id, brand_name", [
+    }>("insert into ecom.brands (brand_name) values ($1) returning id, brand_name", [
       input.brandName
     ]);
 
@@ -22,7 +22,7 @@ export class PgBrandRepository implements BrandRepository {
     const res = await this.db.query<{
       id: string;
       brand_name: string;
-    }>("select id, brand_name from catalog.brands where id = $1", [id]);
+    }>("select id, brand_name from ecom.brands where id = $1", [id]);
 
     const row = res.rows[0];
     if (!row) return null;
@@ -33,7 +33,7 @@ export class PgBrandRepository implements BrandRepository {
     const res = await this.db.query<{
       id: string;
       brand_name: string;
-    }>("select id, brand_name from catalog.brands order by brand_name asc");
+    }>("select id, brand_name from ecom.brands order by brand_name asc");
 
     return res.rows.map((r) => ({ id: r.id, brandName: r.brand_name }));
   }
