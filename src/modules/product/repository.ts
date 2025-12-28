@@ -9,8 +9,11 @@ export type CreateProductInput = {
   longDesc?: string;
 };
 
+export type UpdateProductInput = Partial<CreateProductInput>;
+
 export interface ProductRepository {
   create(input: CreateProductInput): Promise<Product>;
+  update(id: string, input: UpdateProductInput): Promise<Product | null>;
   findById(id: string): Promise<Product | null>;
   list(): Promise<Product[]>;
 }

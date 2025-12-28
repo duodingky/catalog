@@ -7,6 +7,7 @@ export type CreateBrandInput = {
 export interface BrandRepository {
   create(input: CreateBrandInput): Promise<Brand>;
   findById(id: string): Promise<Brand | null>;
+  findByName(brandName: string): Promise<Brand | null>;
   list(): Promise<Brand[]>;
 }
 

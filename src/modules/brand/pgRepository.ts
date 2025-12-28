@@ -29,6 +29,17 @@ export class PgBrandRepository implements BrandRepository {
     return { id: row.id, brandName: row.brand_name };
   }
 
+  async findByName(brandName: string): Promise<Brand | null> {
+    const res = await this.db.query<{
+      id: string;
+      brand_name: string;
+    }>("select id, brand_name from ecom.brands where brand_name = $1", [brandName]);
+
+    const row = res.rows[0];
+    if (!row) return null;
+    return { id: row.id, brandName: row.brand_name };
+  }
+
   async list(): Promise<Brand[]> {
     const res = await this.db.query<{
       id: string;
