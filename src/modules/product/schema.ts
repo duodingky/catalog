@@ -13,12 +13,61 @@ const priceSchema = z.union([z.number(), z.string()]).transform((v, ctx) => {
   return s;
 });
 
-export const createProductBodySchema = z.object({
-  productName: z.string().min(1).max(200),
-  categoryId: z.string().uuid(),
-  brandId: z.string().uuid(),
-  price: priceSchema,
-  shortDesc: z.string().max(500).optional(),
-  longDesc: z.string().max(5000).optional()
-});
+const brandFieldsSchema = z
+  .object({
+    brandId: z.string().uuid().optional(),
+    brandName: z.string().min(1).max(200).optional(),
+    // common misspelling support
+    branndName: z.string().min(1).max(200).optional()
+  })
+  .transform((v) => ({
+    brandId: v.brandId,
+    brandName: v.brandName ?? v.branndName
+  }));
+
+export const createProductBodySchema = z
+  .object({
+    productName: z.string().min(1).max(200),
+    categoryId: z.string().uuid(),
+    price: priceSchema,
+    shortDesc: z.string().max(500).optional(),
+    longDesc: z.string().max(5000).optional()
+  })
+  .and(brandFieldsSchema)
+  .superRefine((v, ctx) => {
+    if (!v.brandId && !v.brandName) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["brandId"],
+        message: "Provide brandId or brandName"
+      });
+    }
+  });
+
+export const updateProductBodySchema = z
+  .object({
+    productName: z.string().min(1).max(200).optional(),
+    categoryId: z.string().uuid().optional(),
+    price: priceSchema.optional(),
+    shortDesc: z.string().max(500).optional(),
+    longDesc: z.string().max(5000).optional()
+  })
+  .and(brandFieldsSchema)
+  .superRefine((v, ctx) => {
+    const hasAny =
+      v.productName !== undefined ||
+      v.categoryId !== undefined ||
+      v.price !== undefined ||
+      v.shortDesc !== undefined ||
+      v.longDesc !== undefined ||
+      v.brandId !== undefined ||
+      v.brandName !== undefined;
+
+    if (!hasAny) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Provide at least one field to update"
+      });
+    }
+  });
 
