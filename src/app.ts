@@ -3,6 +3,7 @@ import helmet from "@fastify/helmet";
 import cors from "@fastify/cors";
 import { ZodError } from "zod";
 import { AppError } from "./shared/errors.js";
+import { registerAuth } from "./auth/plugin.js";
 import { registerCategoryRoutes } from "./modules/category/routes.js";
 import { registerBrandRoutes } from "./modules/brand/routes.js";
 import { registerProductRoutes } from "./modules/product/routes.js";
@@ -16,6 +17,8 @@ export function buildApp() {
   app.register(cors, { origin: true });
 
   app.get("/health", async () => ({ ok: true }));
+
+  app.register(registerAuth);
 
   app.register(registerCategoryRoutes, { prefix: "/categories" });
   app.register(registerBrandRoutes, { prefix: "/brands" });

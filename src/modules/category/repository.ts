@@ -6,8 +6,14 @@ export type CreateCategoryInput = {
   parentCategory?: string;
 };
 
+export type UpdateCategoryInput = Partial<CreateCategoryInput>;
+
 export interface CategoryRepository {
   create(input: { categoryName: string; parentId: string }): Promise<CategoryWithParent>;
+  update(
+    id: string,
+    input: { categoryName?: string; parentId?: string }
+  ): Promise<CategoryWithParent | null>;
   findById(id: string): Promise<Category | null>;
   findAllByName(categoryName: string): Promise<Category[]>;
   listWithParents(): Promise<CategoryWithParent[]>;
