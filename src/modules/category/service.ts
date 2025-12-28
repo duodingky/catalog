@@ -24,6 +24,14 @@ export class CategoryService {
     return found;
   }
 
+  async getByIdWithChildren(id: string): Promise<CategoryNode> {
+    const rows = await this.repo.listWithParents();
+    const tree = buildCategoryTree(rows);
+    const found = findNode(tree, id);
+    if (!found) throw new NotFoundError("Category not found");
+    return found;
+  }
+
   async list(): Promise<CategoryNode[]> {
     const rows = await this.repo.listWithParents();
     return buildCategoryTree(rows);
@@ -77,5 +85,14 @@ function buildCategoryTree(rows: CategoryWithParent[]): CategoryNode[] {
   for (const r of roots) sortRecursively(r);
 
   return roots;
+}
+
+function findNode(nodes: CategoryNode[], id: string): CategoryNode | null {
+  for (const n of nodes) {
+    if (n.id === id) return n;
+    const inChild = findNode(n.children, id);
+    if (inChild) return inChild;
+  }
+  return null;
 }
 
