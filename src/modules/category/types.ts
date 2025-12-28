@@ -3,3 +3,12 @@ export type Category = {
   categoryName: string;
 };
 
+export type CategoryWithParent = Category & {
+  parentId: string;
+};
+
+export type CategoryNode = Category & {
+  parentId: string;
+  children: CategoryNode[];
+};
+

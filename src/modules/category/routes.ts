@@ -14,7 +14,7 @@ export const registerCategoryRoutes: FastifyPluginAsync = async (app) => {
 
   app.get("/:id", async (req) => {
     const { id } = categoryIdParamSchema.parse(req.params);
-    return await service.getById(id);
+    return await service.getByIdWithChildren(id);
   });
 
   app.post("/", async (req, reply) => {
