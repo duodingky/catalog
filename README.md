@@ -52,6 +52,27 @@ npm run dev
 
 API runs on `http://localhost:3000`.
 
+### API key authentication 🔒
+
+You can protect API access with an API key — no login required. Provide either a single `API_KEY` env var or `API_KEYS` (comma-separated list) and the server will validate incoming requests.
+
+Accepted ways to provide the key:
+
+- `x-api-key: <key>` header
+- `Authorization: ApiKey <key>` or `Authorization: Bearer <key>` header
+
+Example:
+
+curl -H "x-api-key: my-secret" http://localhost:3000/products
+
+Set env:
+
+export API_KEY=my-secret
+
+Or multiple keys:
+
+export API_KEYS=key1,key2
+
 ### Endpoints
 
 - **Health**
