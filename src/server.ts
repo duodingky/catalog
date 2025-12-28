@@ -8,7 +8,6 @@ async function waitForDb() {
   const startedAt = Date.now();
   const timeoutMs = 60_000;
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
       await pool.query("select 1 as ok");
