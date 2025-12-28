@@ -1,5 +1,5 @@
 import type { CategoryRepository, CreateCategoryInput } from "./repository.js";
-import { ConflictError, NotFoundError } from "../../shared/errors.js";
+import { BadRequestError, ConflictError, NotFoundError } from "../../shared/errors.js";
 import { isPgError, PG_ERROR } from "../../shared/pgErrors.js";
 import type { Category, CategoryNode, CategoryWithParent } from "./types.js";
 
@@ -12,7 +12,7 @@ export class CategoryService {
       return await this.repo.create({ categoryName: input.categoryName, parentId: resolvedParentId });
     } catch (err) {
       if (isPgError(err) && err.code === PG_ERROR.UNIQUE_VIOLATION) {
-        throw new ConflictError("Category name already exists");
+        throw new ConflictError("Category name already exists under this parent category");
       }
       throw err;
     }
@@ -39,9 +39,12 @@ export class CategoryService {
 
   private async resolveParentId(input: CreateCategoryInput): Promise<string> {
     if (input.parentCategory) {
-      const parent = await this.repo.findByName(input.parentCategory);
-      if (!parent) throw new NotFoundError("Parent category not found");
-      return parent.id;
+      const matches = await this.repo.findAllByName(input.parentCategory);
+      if (matches.length === 0) throw new NotFoundError("Parent category not found");
+      if (matches.length > 1) {
+        throw new BadRequestError("Parent category name is ambiguous; please provide parentId instead");
+      }
+      return matches[0]!.id;
     }
 
     const parentId = input.parentId ?? "0";
