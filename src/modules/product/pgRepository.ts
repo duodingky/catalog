@@ -10,6 +10,7 @@ export class PgProductRepository implements ProductRepository {
       id: string;
       product_name: string;
       category_id: string;
+      category_name: string;
       brand_id: string;
       brand_name: string;
       price: string;
@@ -24,6 +25,7 @@ export class PgProductRepository implements ProductRepository {
         id,
         product_name,
         category_id,
+        (select c.category_name from ecom.categories c where c.id = category_id) as category_name,
         brand_id,
         (select b.brand_name from ecom.brands b where b.id = brand_id) as brand_name,
         price,
@@ -48,6 +50,7 @@ export class PgProductRepository implements ProductRepository {
       id: row.id,
       productName: row.product_name,
       categoryId: row.category_id,
+      categoryName: row.category_name,
       brandId: row.brand_id,
       brandName: row.brand_name,
       price: row.price,
@@ -62,6 +65,7 @@ export class PgProductRepository implements ProductRepository {
       id: string;
       product_name: string;
       category_id: string;
+      category_name: string;
       brand_id: string;
       brand_name: string;
       price: string;
@@ -85,6 +89,7 @@ export class PgProductRepository implements ProductRepository {
         id,
         product_name,
         category_id,
+        (select c.category_name from ecom.categories c where c.id = category_id) as category_name,
         brand_id,
         (select b.brand_name from ecom.brands b where b.id = brand_id) as brand_name,
         price,
@@ -110,6 +115,7 @@ export class PgProductRepository implements ProductRepository {
       id: row.id,
       productName: row.product_name,
       categoryId: row.category_id,
+      categoryName: row.category_name,
       brandId: row.brand_id,
       brandName: row.brand_name,
       price: row.price,
@@ -124,6 +130,7 @@ export class PgProductRepository implements ProductRepository {
       id: string;
       product_name: string;
       category_id: string;
+      category_name: string;
       brand_id: string;
       brand_name: string;
       price: string;
@@ -136,6 +143,7 @@ export class PgProductRepository implements ProductRepository {
         p.id,
         p.product_name,
         p.category_id,
+        c.category_name,
         p.brand_id,
         b.brand_name,
         p.price,
@@ -143,6 +151,7 @@ export class PgProductRepository implements ProductRepository {
         p.short_desc,
         p.long_desc
       from ecom.products p
+      join ecom.categories c on c.id = p.category_id
       join ecom.brands b on b.id = p.brand_id
       where p.id = $1
       `,
@@ -155,6 +164,7 @@ export class PgProductRepository implements ProductRepository {
       id: row.id,
       productName: row.product_name,
       categoryId: row.category_id,
+      categoryName: row.category_name,
       brandId: row.brand_id,
       brandName: row.brand_name,
       price: row.price,
@@ -169,6 +179,7 @@ export class PgProductRepository implements ProductRepository {
       id: string;
       product_name: string;
       category_id: string;
+      category_name: string;
       brand_id: string;
       brand_name: string;
       price: string;
@@ -181,6 +192,7 @@ export class PgProductRepository implements ProductRepository {
         p.id,
         p.product_name,
         p.category_id,
+        c.category_name,
         p.brand_id,
         b.brand_name,
         p.price,
@@ -188,6 +200,7 @@ export class PgProductRepository implements ProductRepository {
         p.short_desc,
         p.long_desc
       from ecom.products p
+      join ecom.categories c on c.id = p.category_id
       join ecom.brands b on b.id = p.brand_id
       order by p.product_name asc
       `
@@ -197,6 +210,7 @@ export class PgProductRepository implements ProductRepository {
       id: row.id,
       productName: row.product_name,
       categoryId: row.category_id,
+      categoryName: row.category_name,
       brandId: row.brand_id,
       brandName: row.brand_name,
       price: row.price,
