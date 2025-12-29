@@ -32,6 +32,36 @@ export class PgCategoryRepository implements CategoryRepository {
     }
   }
 
+  async update(
+    id: string,
+    input: { categoryName?: string; parentId?: string }
+  ): Promise<CategoryWithParent | null> {
+    const res = await this.db.query<{
+      id: string;
+      category_name: string;
+      parent_id: string | null;
+    }>(
+      `
+      update ecom.categories
+      set
+        category_name = coalesce($2, category_name),
+        parent_id = case
+          when $3 is null then parent_id
+          when $3 = '0' then null
+          else $3::uuid
+        end,
+        updated_at = now()
+      where id = $1
+      returning id, category_name, parent_id
+      `,
+      [id, input.categoryName ?? null, input.parentId ?? null]
+    );
+
+    const row = res.rows[0];
+    if (!row) return null;
+    return { id: row.id, categoryName: row.category_name, parentId: row.parent_id ?? "0" };
+  }
+
   async findById(id: string): Promise<Category | null> {
     const res = await this.db.query<{
       id: string;

@@ -3,11 +3,17 @@ import helmet from "@fastify/helmet";
 import cors from "@fastify/cors";
 import { ZodError } from "zod";
 import { AppError } from "./shared/errors.js";
+import { registerAuth } from "./auth/plugin.js";
 import { registerCategoryRoutes } from "./modules/category/routes.js";
 import { registerBrandRoutes } from "./modules/brand/routes.js";
 import { registerProductRoutes } from "./modules/product/routes.js";
 
-export function buildApp() {
+import fastifyCookie from '@fastify/cookie';
+import fastifySession from '@fastify/session';
+
+
+
+export async function buildApp() {
   const app = Fastify({
     logger: true
   });
@@ -15,7 +21,17 @@ export function buildApp() {
   app.register(helmet);
   app.register(cors, { origin: true });
 
+
+
   app.get("/health", async () => ({ ok: true }));
+
+  // Auth before any routes using permissions
+  await app.register(registerAuth);
+
+  // Useful for debugging: shows decoded JWT payload as req.user
+  app.get("/me", { preValidation: [app.authenticate] }, async (req) => {
+    return { user: req.user };
+  });
 
   app.register(registerCategoryRoutes, { prefix: "/categories" });
   app.register(registerBrandRoutes, { prefix: "/brands" });

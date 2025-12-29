@@ -1,4 +1,4 @@
-import type { CategoryRepository, CreateCategoryInput } from "./repository.js";
+import type { CategoryRepository, CreateCategoryInput, UpdateCategoryInput } from "./repository.js";
 import { BadRequestError, ConflictError, NotFoundError } from "../../shared/errors.js";
 import { isPgError, PG_ERROR } from "../../shared/pgErrors.js";
 import type { Category, CategoryNode, CategoryWithParent } from "./types.js";
@@ -35,6 +35,36 @@ export class CategoryService {
   async list(): Promise<CategoryNode[]> {
     const rows = await this.repo.listWithParents();
     return buildCategoryTree(rows);
+  }
+
+  async update(id: string, input: UpdateCategoryInput): Promise<CategoryWithParent> {
+    try {
+      let resolvedParentId: string | undefined;
+      if (input.parentId !== undefined || input.parentCategory !== undefined) {
+        resolvedParentId = await this.resolveParentId({
+          categoryName: input.categoryName ?? "",
+          parentId: input.parentId,
+          parentCategory: input.parentCategory
+        });
+      }
+
+      if (resolvedParentId !== undefined && resolvedParentId !== "0" && resolvedParentId === id) {
+        throw new BadRequestError("A category cannot be its own parent");
+      }
+
+      const updated = await this.repo.update(id, {
+        categoryName: input.categoryName,
+        parentId: resolvedParentId
+      });
+
+      if (!updated) throw new NotFoundError("Category not found");
+      return updated;
+    } catch (err) {
+      if (isPgError(err) && err.code === PG_ERROR.UNIQUE_VIOLATION) {
+        throw new ConflictError("Category name already exists under this parent category");
+      }
+      throw err;
+    }
   }
 
   private async resolveParentId(input: CreateCategoryInput): Promise<string> {

@@ -10,25 +10,41 @@ export const registerProductRoutes: FastifyPluginAsync = async (app) => {
   const brandRepo = new PgBrandRepository(pool);
   const service = new ProductService(repo, brandRepo);
 
-  app.get("/", async () => {
+  app.get(
+    "/",
+    { preValidation: [app.authenticate, app.requirePermission("read")] },
+    async () => {
     return await service.list();
-  });
+    }
+  );
 
-  app.get("/:id", async (req) => {
+  app.get(
+    "/:id",
+    { preValidation: [app.authenticate, app.requirePermission("read")] },
+    async (req) => {
     const { id } = productIdParamSchema.parse(req.params);
     return await service.getById(id);
-  });
+    }
+  );
 
-  app.post("/", async (req, reply) => {
+  app.post(
+    "/",
+    { preValidation: [app.authenticate, app.requirePermission("write")] },
+    async (req, reply) => {
     const body = createProductBodySchema.parse(req.body);
     const created = await service.create(body);
     return reply.status(201).send(created);
-  });
+    }
+  );
 
-  app.patch("/:id", async (req) => {
+  app.patch(
+    "/:id",
+    { preValidation: [app.authenticate, app.requirePermission("write")] },
+    async (req) => {
     const { id } = productIdParamSchema.parse(req.params);
     const body = updateProductBodySchema.parse(req.body);
     return await service.update(id, body);
-  });
+    }
+  );
 };
 

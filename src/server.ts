@@ -15,7 +15,7 @@ async function waitForDb() {
     } catch (err) {
       const elapsed = Date.now() - startedAt;
       if (elapsed > timeoutMs) throw err;
-      app.log.warn({ err }, "DB not ready yet, retrying...");
+      (await app).log.warn({ err }, "DB not ready yet, retrying...");
       await new Promise((r) => setTimeout(r, 1000));
     }
   }
@@ -24,11 +24,11 @@ async function waitForDb() {
 async function start() {
   await waitForDb();
 
-  await app.listen({ port: env.PORT, host: "0.0.0.0" });
+  await (await app).listen({ port: env.PORT, host: "0.0.0.0" });
 }
 
-start().catch((err) => {
-  app.log.error(err);
+start().catch(async (err) => {
+  (await app).log.error(err);
   process.exit(1);
 });
 

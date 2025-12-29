@@ -1,5 +1,5 @@
 import type { Pool } from "pg";
-import type { BrandRepository, CreateBrandInput } from "./repository.js";
+import type { BrandRepository, CreateBrandInput, UpdateBrandInput } from "./repository.js";
 import type { Brand } from "./types.js";
 
 export class PgBrandRepository implements BrandRepository {
@@ -15,6 +15,27 @@ export class PgBrandRepository implements BrandRepository {
 
     const row = res.rows[0];
     if (!row) throw new Error("Failed to create brand");
+    return { id: row.id, brandName: row.brand_name };
+  }
+
+  async update(id: string, input: UpdateBrandInput): Promise<Brand | null> {
+    const res = await this.db.query<{
+      id: string;
+      brand_name: string;
+    }>(
+      `
+      update ecom.brands
+      set
+        brand_name = coalesce($2, brand_name),
+        updated_at = now()
+      where id = $1
+      returning id, brand_name
+      `,
+      [id, input.brandName ?? null]
+    );
+
+    const row = res.rows[0];
+    if (!row) return null;
     return { id: row.id, brandName: row.brand_name };
   }
 
