@@ -1,6 +1,7 @@
 export type Category = {
   id: string;
   categoryName: string;
+  imageUrl: string | null;
 };
 
 export type CategoryWithParent = Category & {

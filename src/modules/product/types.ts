@@ -5,6 +5,7 @@ export type Product = {
   brandId: string;
   brandName: string;
   price: string; // returned from Postgres numeric as string
+  imageUrl: string | null;
   shortDesc: string | null;
   longDesc: string | null;
 };

@@ -4,7 +4,6 @@ import fp from "fastify-plugin";
 import fastifyCookie from "@fastify/cookie";
 import fastifySession from "@fastify/session";
 import fastifyPassport from "@fastify/passport";
-import fastifyFlash from "@fastify/flash";
 import { ExtractJwt, Strategy as JwtStrategy } from "passport-jwt";
 import { env } from "../config/env.js";
 import { ForbiddenError } from "../shared/errors.js";

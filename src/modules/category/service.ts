@@ -9,7 +9,11 @@ export class CategoryService {
   async create(input: CreateCategoryInput): Promise<CategoryWithParent> {
     try {
       const resolvedParentId = await this.resolveParentId(input);
-      return await this.repo.create({ categoryName: input.categoryName, parentId: resolvedParentId });
+      return await this.repo.create({
+        categoryName: input.categoryName,
+        parentId: resolvedParentId,
+        imageUrl: input.imageUrl
+      });
     } catch (err) {
       if (isPgError(err) && err.code === PG_ERROR.UNIQUE_VIOLATION) {
         throw new ConflictError("Category name already exists under this parent category");
@@ -54,6 +58,7 @@ export class CategoryService {
 
       const updated = await this.repo.update(id, {
         categoryName: input.categoryName,
+        imageUrl: input.imageUrl,
         parentId: resolvedParentId
       });
 
@@ -89,7 +94,13 @@ export class CategoryService {
 function buildCategoryTree(rows: CategoryWithParent[]): CategoryNode[] {
   const byId = new Map<string, CategoryNode>();
   for (const r of rows) {
-    byId.set(r.id, { id: r.id, categoryName: r.categoryName, parentId: r.parentId, children: [] });
+    byId.set(r.id, {
+      id: r.id,
+      categoryName: r.categoryName,
+      imageUrl: r.imageUrl,
+      parentId: r.parentId,
+      children: []
+    });
   }
 
   const roots: CategoryNode[] = [];

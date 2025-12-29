@@ -4,6 +4,13 @@ export const productIdParamSchema = z.object({
   id: z.string().uuid()
 });
 
+const imageUrlSchema = z
+  .string()
+  .url()
+  .refine((v) => v.startsWith("http://") || v.startsWith("https://"), {
+    message: "imageUrl must be a valid http/https URL"
+  });
+
 const priceSchema = z.union([z.number(), z.string()]).transform((v, ctx) => {
   const s = typeof v === "number" ? String(v) : v;
   if (!/^\d+(\.\d{1,2})?$/.test(s)) {
@@ -30,6 +37,7 @@ export const createProductBodySchema = z
     productName: z.string().min(1).max(200),
     categoryId: z.string().uuid(),
     price: priceSchema,
+    imageUrl: imageUrlSchema.optional(),
     shortDesc: z.string().max(500).optional(),
     longDesc: z.string().max(5000).optional()
   })
@@ -49,6 +57,7 @@ export const updateProductBodySchema = z
     productName: z.string().min(1).max(200).optional(),
     categoryId: z.string().uuid().optional(),
     price: priceSchema.optional(),
+    imageUrl: imageUrlSchema.optional(),
     shortDesc: z.string().max(500).optional(),
     longDesc: z.string().max(5000).optional()
   })
@@ -58,6 +67,7 @@ export const updateProductBodySchema = z
       v.productName !== undefined ||
       v.categoryId !== undefined ||
       v.price !== undefined ||
+      v.imageUrl !== undefined ||
       v.shortDesc !== undefined ||
       v.longDesc !== undefined ||
       v.brandId !== undefined ||
