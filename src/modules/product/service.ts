@@ -1,4 +1,5 @@
 import type { BrandRepository } from "../brand/repository.js";
+import type { CategoryRepository } from "../category/repository.js";
 import type { ProductRepository, CreateProductInput, UpdateProductInput } from "./repository.js";
 import type { Product } from "./types.js";
 import { BadRequestError, NotFoundError } from "../../shared/errors.js";
@@ -12,11 +13,26 @@ export type CreateOrUpdateProductRequest = Omit<CreateProductInput, "brandId"> &
 export class ProductService {
   constructor(
     private readonly repo: ProductRepository,
-    private readonly brandRepo: BrandRepository
+    private readonly brandRepo: BrandRepository,
+    private readonly categoryRepo: CategoryRepository
   ) {}
 
+  private async validateCategoryId(categoryId: string): Promise<void> {
+    const found = await this.categoryRepo.findById(categoryId);
+    if (!found) throw new BadRequestError("Invalid categoryId");
+  }
+
+  private async validateProductNameAvailable(productName: string, excludeId?: string): Promise<void> {
+    const exists = await this.repo.existsByName(productName, excludeId);
+    if (exists) throw new BadRequestError("productName is already exist");
+  }
+
   private async resolveBrandId(input: { brandId?: string; brandName?: string }): Promise<string> {
-    if (input.brandId) return input.brandId;
+    if (input.brandId) {
+      const found = await this.brandRepo.findById(input.brandId);
+      if (!found) throw new BadRequestError("Invalid brandId");
+      return input.brandId;
+    }
     if (!input.brandName) throw new BadRequestError("Provide brandId or brandName");
 
     const existing = await this.brandRepo.findByName(input.brandName);
@@ -37,6 +53,8 @@ export class ProductService {
 
   async create(input: CreateOrUpdateProductRequest): Promise<Product> {
     try {
+      await this.validateProductNameAvailable(input.productName);
+      await this.validateCategoryId(input.categoryId);
       const brandId = await this.resolveBrandId(input);
       return await this.repo.create({
         productName: input.productName,
@@ -57,6 +75,13 @@ export class ProductService {
 
   async update(id: string, input: Partial<CreateOrUpdateProductRequest>): Promise<Product> {
     try {
+      if (input.productName !== undefined) {
+        await this.validateProductNameAvailable(input.productName, id);
+      }
+      if (input.categoryId !== undefined) {
+        await this.validateCategoryId(input.categoryId);
+      }
+
       const updateInput: UpdateProductInput = {
         productName: input.productName,
         categoryId: input.categoryId,
