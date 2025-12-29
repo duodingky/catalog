@@ -138,5 +138,9 @@ export class ProductService {
   async list(): Promise<Product[]> {
     return await this.repo.list();
   }
+
+  async search(query: string): Promise<Product[]> {
+    return await this.repo.search(query);
+  }
 }
 

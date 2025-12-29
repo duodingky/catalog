@@ -81,3 +81,21 @@ export const updateProductBodySchema = z
     }
   });
 
+export const productSearchQuerySchema = z
+  .object({
+    q: z.string().min(1).max(200).optional(),
+    query: z.string().min(1).max(200).optional()
+  })
+  .transform((v) => ({
+    q: (v.q ?? v.query ?? "").trim()
+  }))
+  .superRefine((v, ctx) => {
+    if (!v.q) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["q"],
+        message: "Provide q (search query)"
+      });
+    }
+  });
+

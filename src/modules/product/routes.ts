@@ -4,7 +4,12 @@ import { PgBrandRepository } from "../brand/pgRepository.js";
 import { PgCategoryRepository } from "../category/pgRepository.js";
 import { PgProductRepository } from "./pgRepository.js";
 import { ProductService } from "./service.js";
-import { createProductBodySchema, productIdParamSchema, updateProductBodySchema } from "./schema.js";
+import {
+  createProductBodySchema,
+  productIdParamSchema,
+  productSearchQuerySchema,
+  updateProductBodySchema
+} from "./schema.js";
 
 export const registerProductRoutes: FastifyPluginAsync = async (app) => {
   const repo = new PgProductRepository(pool);
@@ -17,6 +22,15 @@ export const registerProductRoutes: FastifyPluginAsync = async (app) => {
     { preValidation: [app.authenticate, app.requirePermission("read")] },
     async () => {
     return await service.list();
+    }
+  );
+
+  app.get(
+    "/search",
+    { preValidation: [app.authenticate, app.requirePermission("read")] },
+    async (req) => {
+      const { q } = productSearchQuerySchema.parse(req.query);
+      return await service.search(q);
     }
   );
 
