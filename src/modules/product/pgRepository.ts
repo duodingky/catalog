@@ -5,17 +5,24 @@ import type { Product } from "./types.js";
 export class PgProductRepository implements ProductRepository {
   constructor(private readonly db: Pool) {}
 
-  async existsByName(productName: string, excludeId?: string): Promise<boolean> {
+  async existsByNameInCategoryAndBrand(input: {
+    productName: string;
+    categoryId: string;
+    brandId: string;
+    excludeId?: string;
+  }): Promise<boolean> {
     const res = await this.db.query<{ exists: boolean }>(
       `
       select exists(
         select 1
         from ecom.products p
         where lower(p.product_name) = lower($1)
-          and ($2::uuid is null or p.id <> $2::uuid)
+          and p.category_id = $2::uuid
+          and p.brand_id = $3::uuid
+          and ($4::uuid is null or p.id <> $4::uuid)
       ) as exists
       `,
-      [productName, excludeId ?? null]
+      [input.productName, input.categoryId, input.brandId, input.excludeId ?? null]
     );
 
     return res.rows[0]?.exists ?? false;

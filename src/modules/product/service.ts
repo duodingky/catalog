@@ -22,8 +22,13 @@ export class ProductService {
     if (!found) throw new BadRequestError("Invalid categoryId");
   }
 
-  private async validateProductNameAvailable(productName: string, excludeId?: string): Promise<void> {
-    const exists = await this.repo.existsByName(productName, excludeId);
+  private async validateProductNameAvailable(input: {
+    productName: string;
+    categoryId: string;
+    brandId: string;
+    excludeId?: string;
+  }): Promise<void> {
+    const exists = await this.repo.existsByNameInCategoryAndBrand(input);
     if (exists) throw new BadRequestError("productName is already exist");
   }
 
@@ -53,9 +58,13 @@ export class ProductService {
 
   async create(input: CreateOrUpdateProductRequest): Promise<Product> {
     try {
-      await this.validateProductNameAvailable(input.productName);
       await this.validateCategoryId(input.categoryId);
       const brandId = await this.resolveBrandId(input);
+      await this.validateProductNameAvailable({
+        productName: input.productName,
+        categoryId: input.categoryId,
+        brandId
+      });
       return await this.repo.create({
         productName: input.productName,
         categoryId: input.categoryId,
@@ -75,12 +84,28 @@ export class ProductService {
 
   async update(id: string, input: Partial<CreateOrUpdateProductRequest>): Promise<Product> {
     try {
-      if (input.productName !== undefined) {
-        await this.validateProductNameAvailable(input.productName, id);
+      const existing = await this.repo.findById(id);
+      if (!existing) throw new NotFoundError("Product not found");
+
+      const nextCategoryId = input.categoryId ?? existing.categoryId;
+      const nextProductName = input.productName ?? existing.productName;
+
+      if (input.categoryId !== undefined) await this.validateCategoryId(nextCategoryId);
+
+      let nextBrandId = existing.brandId;
+      if (input.brandId || input.brandName) {
+        nextBrandId = await this.resolveBrandId({
+          brandId: input.brandId,
+          brandName: input.brandName
+        });
       }
-      if (input.categoryId !== undefined) {
-        await this.validateCategoryId(input.categoryId);
-      }
+
+      await this.validateProductNameAvailable({
+        productName: nextProductName,
+        categoryId: nextCategoryId,
+        brandId: nextBrandId,
+        excludeId: id
+      });
 
       const updateInput: UpdateProductInput = {
         productName: input.productName,
@@ -91,12 +116,7 @@ export class ProductService {
         longDesc: input.longDesc
       };
 
-      if (input.brandId || input.brandName) {
-        updateInput.brandId = await this.resolveBrandId({
-          brandId: input.brandId,
-          brandName: input.brandName
-        });
-      }
+      if (input.brandId || input.brandName) updateInput.brandId = nextBrandId;
 
       const updated = await this.repo.update(id, updateInput);
       if (!updated) throw new NotFoundError("Product not found");
