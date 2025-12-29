@@ -8,11 +8,6 @@ import { registerCategoryRoutes } from "./modules/category/routes.js";
 import { registerBrandRoutes } from "./modules/brand/routes.js";
 import { registerProductRoutes } from "./modules/product/routes.js";
 
-import fastifyCookie from '@fastify/cookie';
-import fastifySession from '@fastify/session';
-
-
-
 export async function buildApp() {
   const app = Fastify({
     logger: true
@@ -20,8 +15,6 @@ export async function buildApp() {
 
   app.register(helmet);
   app.register(cors, { origin: true });
-
-
 
   app.get("/health", async () => ({ ok: true }));
 

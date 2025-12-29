@@ -43,6 +43,7 @@ export class ProductService {
         categoryId: input.categoryId,
         brandId,
         price: input.price,
+        imageUrl: input.imageUrl,
         shortDesc: input.shortDesc,
         longDesc: input.longDesc
       });
@@ -60,6 +61,7 @@ export class ProductService {
         productName: input.productName,
         categoryId: input.categoryId,
         price: input.price,
+        imageUrl: input.imageUrl,
         shortDesc: input.shortDesc,
         longDesc: input.longDesc
       };

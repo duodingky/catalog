@@ -13,12 +13,13 @@ export class PgProductRepository implements ProductRepository {
       brand_id: string;
       brand_name: string;
       price: string;
+      image_url: string | null;
       short_desc: string | null;
       long_desc: string | null;
     }>(
       `
-      insert into ecom.products (product_name, category_id, brand_id, price, short_desc, long_desc)
-      values ($1, $2, $3, $4, $5, $6)
+      insert into ecom.products (product_name, category_id, brand_id, price, image_url, short_desc, long_desc)
+      values ($1, $2, $3, $4, $5, $6, $7)
       returning
         id,
         product_name,
@@ -26,6 +27,7 @@ export class PgProductRepository implements ProductRepository {
         brand_id,
         (select b.brand_name from ecom.brands b where b.id = brand_id) as brand_name,
         price,
+        image_url,
         short_desc,
         long_desc
       `,
@@ -34,6 +36,7 @@ export class PgProductRepository implements ProductRepository {
         input.categoryId,
         input.brandId,
         input.price,
+        input.imageUrl ?? null,
         input.shortDesc ?? null,
         input.longDesc ?? null
       ]
@@ -48,6 +51,7 @@ export class PgProductRepository implements ProductRepository {
       brandId: row.brand_id,
       brandName: row.brand_name,
       price: row.price,
+      imageUrl: row.image_url,
       shortDesc: row.short_desc,
       longDesc: row.long_desc
     };
@@ -61,6 +65,7 @@ export class PgProductRepository implements ProductRepository {
       brand_id: string;
       brand_name: string;
       price: string;
+      image_url: string | null;
       short_desc: string | null;
       long_desc: string | null;
     }>(
@@ -71,8 +76,9 @@ export class PgProductRepository implements ProductRepository {
         category_id = coalesce($3, category_id),
         brand_id = coalesce($4, brand_id),
         price = coalesce($5, price),
-        short_desc = coalesce($6, short_desc),
-        long_desc = coalesce($7, long_desc),
+        image_url = coalesce($6, image_url),
+        short_desc = coalesce($7, short_desc),
+        long_desc = coalesce($8, long_desc),
         updated_at = now()
       where id = $1
       returning
@@ -82,6 +88,7 @@ export class PgProductRepository implements ProductRepository {
         brand_id,
         (select b.brand_name from ecom.brands b where b.id = brand_id) as brand_name,
         price,
+        image_url,
         short_desc,
         long_desc
       `,
@@ -91,6 +98,7 @@ export class PgProductRepository implements ProductRepository {
         input.categoryId ?? null,
         input.brandId ?? null,
         input.price ?? null,
+        input.imageUrl ?? null,
         input.shortDesc ?? null,
         input.longDesc ?? null
       ]
@@ -105,6 +113,7 @@ export class PgProductRepository implements ProductRepository {
       brandId: row.brand_id,
       brandName: row.brand_name,
       price: row.price,
+      imageUrl: row.image_url,
       shortDesc: row.short_desc,
       longDesc: row.long_desc
     };
@@ -118,6 +127,7 @@ export class PgProductRepository implements ProductRepository {
       brand_id: string;
       brand_name: string;
       price: string;
+      image_url: string | null;
       short_desc: string | null;
       long_desc: string | null;
     }>(
@@ -129,6 +139,7 @@ export class PgProductRepository implements ProductRepository {
         p.brand_id,
         b.brand_name,
         p.price,
+        p.image_url,
         p.short_desc,
         p.long_desc
       from ecom.products p
@@ -147,6 +158,7 @@ export class PgProductRepository implements ProductRepository {
       brandId: row.brand_id,
       brandName: row.brand_name,
       price: row.price,
+      imageUrl: row.image_url,
       shortDesc: row.short_desc,
       longDesc: row.long_desc
     };
@@ -160,6 +172,7 @@ export class PgProductRepository implements ProductRepository {
       brand_id: string;
       brand_name: string;
       price: string;
+      image_url: string | null;
       short_desc: string | null;
       long_desc: string | null;
     }>(
@@ -171,6 +184,7 @@ export class PgProductRepository implements ProductRepository {
         p.brand_id,
         b.brand_name,
         p.price,
+        p.image_url,
         p.short_desc,
         p.long_desc
       from ecom.products p
@@ -186,6 +200,7 @@ export class PgProductRepository implements ProductRepository {
       brandId: row.brand_id,
       brandName: row.brand_name,
       price: row.price,
+      imageUrl: row.image_url,
       shortDesc: row.short_desc,
       longDesc: row.long_desc
     }));
