@@ -13,6 +13,12 @@ export type CreateProductInput = {
 export type UpdateProductInput = Partial<CreateProductInput>;
 
 export interface ProductRepository {
+  existsByNameInCategoryAndBrand(input: {
+    productName: string;
+    categoryId: string;
+    brandId: string;
+    excludeId?: string;
+  }): Promise<boolean>;
   create(input: CreateProductInput): Promise<Product>;
   update(id: string, input: UpdateProductInput): Promise<Product | null>;
   findById(id: string): Promise<Product | null>;

@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
 import { pool } from "../../db/pool.js";
 import { PgBrandRepository } from "../brand/pgRepository.js";
+import { PgCategoryRepository } from "../category/pgRepository.js";
 import { PgProductRepository } from "./pgRepository.js";
 import { ProductService } from "./service.js";
 import { createProductBodySchema, productIdParamSchema, updateProductBodySchema } from "./schema.js";
@@ -8,7 +9,8 @@ import { createProductBodySchema, productIdParamSchema, updateProductBodySchema 
 export const registerProductRoutes: FastifyPluginAsync = async (app) => {
   const repo = new PgProductRepository(pool);
   const brandRepo = new PgBrandRepository(pool);
-  const service = new ProductService(repo, brandRepo);
+  const categoryRepo = new PgCategoryRepository(pool);
+  const service = new ProductService(repo, brandRepo, categoryRepo);
 
   app.get(
     "/",
