@@ -20,11 +20,7 @@ export async function buildApp() {
 
   app.register(helmet);
   app.register(cors, { origin: true });
-  app.register(fastifyCookie);
-  app.register(fastifySession, {
-  secret: 'a very long secret string for signing cookies',
-  cookie: { secure: false }, // set secure: true in production with HTTPS
-});
+
 
 
   app.get("/health", async () => ({ ok: true }));
