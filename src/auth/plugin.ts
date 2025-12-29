@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync, preValidationHookHandler } from "fastify";
 import fastifyPassport from "@fastify/passport";
+import fp from "fastify-plugin";
 import { ExtractJwt, Strategy as JwtStrategy } from "passport-jwt";
 import { env } from "../config/env.js";
 import { ForbiddenError } from "../shared/errors.js";
@@ -29,7 +30,7 @@ function extractPermissions(user: JwtUser | undefined): Set<string> {
   return new Set(perms.map((p) => p.trim().toLowerCase()).filter(Boolean));
 }
 
-export const registerAuth: FastifyPluginAsync = async (app) => {
+const authPlugin: FastifyPluginAsync = async (app) => {
   const publicKey = normalizePemKey(env.JWT_PUBLIC_KEY);
 
   await app.register(fastifyPassport.initialize());
@@ -69,4 +70,7 @@ export const registerAuth: FastifyPluginAsync = async (app) => {
     };
   });
 };
+
+// Disable encapsulation so `app.authenticate` is available on the root instance.
+export const registerAuth = fp(authPlugin, { name: "auth" });
 
