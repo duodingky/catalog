@@ -8,10 +8,8 @@ export const registerCategoryRoutes: FastifyPluginAsync = async (app) => {
   const repo = new PgCategoryRepository(pool);
   const service = new CategoryService(repo);
 
-  app.get("/", { preValidation: [app.authenticate] }, async (req, reply) => {
-     return { categories: ["example"], user: req.user };
-
-    // return await service.list();
+  app.get("/", { preValidation: [app.authenticate, app.requirePermission("read")] }, async () => {
+    return await service.list();
   });
 
   app.get(
