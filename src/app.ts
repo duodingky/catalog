@@ -8,7 +8,7 @@ import { registerCategoryRoutes } from "./modules/category/routes.js";
 import { registerBrandRoutes } from "./modules/brand/routes.js";
 import { registerProductRoutes } from "./modules/product/routes.js";
 
-export function buildApp() {
+export async function buildApp() {
   const app = Fastify({
     logger: true
   });
@@ -19,7 +19,7 @@ export function buildApp() {
   app.get("/health", async () => ({ ok: true }));
 
   // Auth before any routes using permissions
-  app.register(registerAuth);
+  await app.register(registerAuth);
 
   // Useful for debugging: shows decoded JWT payload as req.user
   app.get("/me", { preValidation: [app.authenticate] }, async (req) => {
