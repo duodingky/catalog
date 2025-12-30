@@ -23,5 +23,6 @@ export interface ProductRepository {
   update(id: string, input: UpdateProductInput): Promise<Product | null>;
   findById(id: string): Promise<Product | null>;
   list(): Promise<Product[]>;
+  search(query: string): Promise<Product[]>;
 }
 
