@@ -15,19 +15,19 @@ export const registerCategoryRoutes: FastifyPluginAsync = async (app) => {
   const service = new CategoryService(repo);
 
   app.get("/", { preValidation: [app.authenticate, app.requirePermission("read")] }, async (req) => {
-    const { includeChildren } = listCategoriesQuerySchema.parse(req.query);
-    return await service.list(includeChildren);
+    const { includeChildren, start, limit } = listCategoriesQuerySchema.parse(req.query);
+    return await service.listPaged({ includeChildren, start, limit });
   });
 
   app.get(
     "/:id",
     { preValidation: [app.authenticate, app.requirePermission("read")] },
     async (req) => {
-      const { includeChildren } = listCategoriesQuerySchema.parse(req.query);
+      const { includeChildren, start, limit } = listCategoriesQuerySchema.parse(req.query);
       const { id } = categoryIdOrZeroParamSchema.parse(req.params);
 
       if (id === "0") {
-        return await service.list(includeChildren);
+        return await service.listPaged({ includeChildren, start, limit });
       }
 
       return await service.getByIdWithChildren(id, includeChildren);

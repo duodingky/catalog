@@ -2,14 +2,15 @@ import type { FastifyPluginAsync } from "fastify";
 import { pool } from "../../db/pool.js";
 import { PgBrandRepository } from "./pgRepository.js";
 import { BrandService } from "./service.js";
-import { brandIdParamSchema, createBrandBodySchema, updateBrandBodySchema } from "./schema.js";
+import { brandIdParamSchema, createBrandBodySchema, listBrandsQuerySchema, updateBrandBodySchema } from "./schema.js";
 
 export const registerBrandRoutes: FastifyPluginAsync = async (app) => {
   const repo = new PgBrandRepository(pool);
   const service = new BrandService(repo);
 
-  app.get("/", { preValidation: [app.authenticate, app.requirePermission("read")] }, async () => {
-    return await service.list();
+  app.get("/", { preValidation: [app.authenticate, app.requirePermission("read")] }, async (req) => {
+    const { start, limit } = listBrandsQuerySchema.parse(req.query);
+    return await service.listPaged({ start, limit });
   });
 
   app.get(

@@ -6,6 +6,7 @@ import { PgProductRepository } from "./pgRepository.js";
 import { ProductService } from "./service.js";
 import {
   createProductBodySchema,
+  listProductsQuerySchema,
   productIdParamSchema,
   productSearchQuerySchema,
   updateProductBodySchema
@@ -20,8 +21,9 @@ export const registerProductRoutes: FastifyPluginAsync = async (app) => {
   app.get(
     "/",
     { preValidation: [app.authenticate, app.requirePermission("read")] },
-    async () => {
-    return await service.list();
+    async (req) => {
+      const { start, limit } = listProductsQuerySchema.parse(req.query);
+      return await service.listPaged({ start, limit });
     }
   );
 

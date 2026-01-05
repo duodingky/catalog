@@ -2,6 +2,7 @@ import type { BrandRepository, CreateBrandInput, UpdateBrandInput } from "./repo
 import { ConflictError, NotFoundError } from "../../shared/errors.js";
 import { isPgError, PG_ERROR } from "../../shared/pgErrors.js";
 import type { Brand } from "./types.js";
+import { buildPagingMeta, type PagingMeta } from "../../shared/pagination.js";
 
 export class BrandService {
   constructor(private readonly repo: BrandRepository) {}
@@ -36,8 +37,16 @@ export class BrandService {
     }
   }
 
-  async list(): Promise<Brand[]> {
-    return await this.repo.list();
+  async listPaged(input: { start: number; limit: number }): Promise<{ data: Brand[]; meta: PagingMeta }> {
+    const { data, totalRecord } = await this.repo.listPaged(input);
+    return {
+      data,
+      meta: buildPagingMeta({
+        totalRecord,
+        startRecord: input.start,
+        returnedCount: data.length
+      })
+    };
   }
 }
 
