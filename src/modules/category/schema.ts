@@ -11,6 +11,10 @@ export const categoryIdParamSchema = z.object({
   id: z.string().uuid()
 });
 
+export const categoryIdOrZeroParamSchema = z.object({
+  id: z.union([z.literal("0"), z.string().uuid()])
+});
+
 const booleanQuerySchema = z.preprocess((v) => {
   if (v === undefined) return undefined;
   if (typeof v === "boolean") return v;

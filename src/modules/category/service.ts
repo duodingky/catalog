@@ -28,17 +28,18 @@ export class CategoryService {
     return found;
   }
 
-  async getByIdWithChildren(id: string): Promise<CategoryNode> {
+  async getByIdWithChildren(id: string, includeChildren = true): Promise<CategoryNode> {
     const rows = await this.repo.listWithParents();
     const tree = buildCategoryTree(rows);
     const found = findNode(tree, id);
     if (!found) throw new NotFoundError("Category not found");
-    return found;
+    return includeChildren ? found : { ...found, children: [] };
   }
 
-  async list(includeChildren = true): Promise<CategoryNode[] | CategoryWithParent[]> {
+  async list(includeChildren = true): Promise<CategoryNode[]> {
     const rows = await this.repo.listWithParents();
-    return includeChildren ? buildCategoryTree(rows) : rows;
+    const tree = buildCategoryTree(rows);
+    return includeChildren ? tree : tree.map((n) => ({ ...n, children: [] }));
   }
 
   async update(id: string, input: UpdateCategoryInput): Promise<CategoryWithParent> {
