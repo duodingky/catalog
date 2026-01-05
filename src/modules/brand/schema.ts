@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { paginationQueryInputSchema } from "../../shared/pagination.js";
 
 const imageUrlSchema = z
   .string()
@@ -25,5 +26,15 @@ export const updateBrandBodySchema = z
     if (v.brandName === undefined && v.imageUrl === undefined) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Provide at least one field to update" });
     }
+  });
+
+export const listBrandsQuerySchema = paginationQueryInputSchema
+  .transform((v) => ({
+    limit: v.limit ?? 10,
+    start: v.start ?? v.star ?? 0
+  }))
+  .superRefine((v, ctx) => {
+    if (v.limit < 0) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["limit"], message: "limit must be >= 0" });
+    if (v.start < 0) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["start"], message: "start must be >= 0" });
   });
 
