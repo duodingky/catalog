@@ -243,6 +243,61 @@ export class PgProductRepository implements ProductRepository {
     }));
   }
 
+  async listPaged(input: { start: number; limit: number }): Promise<{ data: Product[]; totalRecord: number }> {
+    const countRes = await this.db.query<{ total: string }>("select count(*) as total from ecom.products");
+    const totalRecord = Number(countRes.rows[0]?.total ?? 0);
+
+    const res = await this.db.query<{
+      id: string;
+      product_name: string;
+      category_id: string;
+      category_name: string;
+      brand_id: string;
+      brand_name: string;
+      price: string;
+      image_url: string | null;
+      short_desc: string | null;
+      long_desc: string | null;
+    }>(
+      `
+      select
+        p.id,
+        p.product_name,
+        p.category_id,
+        c.category_name,
+        p.brand_id,
+        b.brand_name,
+        p.price,
+        p.image_url,
+        p.short_desc,
+        p.long_desc
+      from ecom.products p
+      join ecom.categories c on c.id = p.category_id
+      join ecom.brands b on b.id = p.brand_id
+      order by p.product_name asc
+      offset $1
+      limit $2
+      `,
+      [input.start, input.limit]
+    );
+
+    return {
+      totalRecord,
+      data: res.rows.map((row) => ({
+        id: row.id,
+        productName: row.product_name,
+        categoryId: row.category_id,
+        categoryName: row.category_name,
+        brandId: row.brand_id,
+        brandName: row.brand_name,
+        price: row.price,
+        imageUrl: row.image_url,
+        shortDesc: row.short_desc,
+        longDesc: row.long_desc
+      }))
+    };
+  }
+
   async search(query: string): Promise<Product[]> {
     const q = `%${query}%`;
     const res = await this.db.query<{

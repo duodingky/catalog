@@ -133,5 +133,12 @@ export class PgCategoryRepository implements CategoryRepository {
       parentId: r.parent_id ?? "0"
     }));
   }
+
+  async countTopLevel(): Promise<number> {
+    const res = await this.db.query<{ total: string }>(
+      "select count(*) as total from ecom.categories where parent_id is null"
+    );
+    return Number(res.rows[0]?.total ?? 0);
+  }
 }
 

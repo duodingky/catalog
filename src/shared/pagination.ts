@@ -24,3 +24,21 @@ export const paginationQueryInputSchema = z.object({
   star: intFromQuery.optional()
 });
 
+export type PagingMeta = {
+  totalRecord: number;
+  startRecord: number;
+  endRecord: number;
+};
+
+export function buildPagingMeta(input: {
+  totalRecord: number;
+  startRecord: number;
+  returnedCount: number;
+}): PagingMeta {
+  const totalRecord = Math.max(0, Math.trunc(input.totalRecord));
+  const startRecord = Math.max(0, Math.trunc(input.startRecord));
+  const returnedCount = Math.max(0, Math.trunc(input.returnedCount));
+  const endRecord = returnedCount === 0 ? -1 : startRecord + returnedCount - 1;
+  return { totalRecord, startRecord, endRecord };
+}
+
