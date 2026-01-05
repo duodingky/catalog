@@ -2,14 +2,20 @@ import type { FastifyPluginAsync } from "fastify";
 import { pool } from "../../db/pool.js";
 import { PgCategoryRepository } from "./pgRepository.js";
 import { CategoryService } from "./service.js";
-import { categoryIdParamSchema, createCategoryBodySchema, updateCategoryBodySchema } from "./schema.js";
+import {
+  categoryIdParamSchema,
+  createCategoryBodySchema,
+  listCategoriesQuerySchema,
+  updateCategoryBodySchema
+} from "./schema.js";
 
 export const registerCategoryRoutes: FastifyPluginAsync = async (app) => {
   const repo = new PgCategoryRepository(pool);
   const service = new CategoryService(repo);
 
-  app.get("/", { preValidation: [app.authenticate, app.requirePermission("read")] }, async () => {
-    return await service.list();
+  app.get("/", { preValidation: [app.authenticate, app.requirePermission("read")] }, async (req) => {
+    const { includeChildren } = listCategoriesQuerySchema.parse(req.query);
+    return await service.list(includeChildren);
   });
 
   app.get(

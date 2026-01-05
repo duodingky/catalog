@@ -11,6 +11,28 @@ export const categoryIdParamSchema = z.object({
   id: z.string().uuid()
 });
 
+const booleanQuerySchema = z.preprocess((v) => {
+  if (v === undefined) return undefined;
+  if (typeof v === "boolean") return v;
+  if (typeof v === "string") {
+    const lowered = v.trim().toLowerCase();
+    if (lowered === "true") return true;
+    if (lowered === "false") return false;
+  }
+  return v;
+}, z.boolean());
+
+export const listCategoriesQuerySchema = z
+  .object({
+    // Canonical spelling
+    includeChildren: booleanQuerySchema.optional(),
+    // Backwards/typo compatibility
+    inlcudeChildren: booleanQuerySchema.optional()
+  })
+  .transform((v) => ({
+    includeChildren: v.includeChildren ?? v.inlcudeChildren ?? true
+  }));
+
 export const createCategoryBodySchema = z.object({
   categoryName: z.string().min(1).max(200),
   imageUrl: imageUrlSchema.optional(),

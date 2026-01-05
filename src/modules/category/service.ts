@@ -36,9 +36,9 @@ export class CategoryService {
     return found;
   }
 
-  async list(): Promise<CategoryNode[]> {
+  async list(includeChildren = true): Promise<CategoryNode[] | CategoryWithParent[]> {
     const rows = await this.repo.listWithParents();
-    return buildCategoryTree(rows);
+    return includeChildren ? buildCategoryTree(rows) : rows;
   }
 
   async update(id: string, input: UpdateCategoryInput): Promise<CategoryWithParent> {
