@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { paginationQueryInputSchema } from "../../shared/pagination.js";
 
 export const productIdParamSchema = z.object({
   id: z.string().uuid()
@@ -97,5 +98,15 @@ export const productSearchQuerySchema = z
         message: "Provide q (search query)"
       });
     }
+  });
+
+export const listProductsQuerySchema = paginationQueryInputSchema
+  .transform((v) => ({
+    limit: v.limit ?? 10,
+    start: v.start ?? v.star ?? 0
+  }))
+  .superRefine((v, ctx) => {
+    if (v.limit < 0) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["limit"], message: "limit must be >= 0" });
+    if (v.start < 0) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["start"], message: "start must be >= 0" });
   });
 

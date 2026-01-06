@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { paginationQueryInputSchema } from "../../shared/pagination.js";
 
 const imageUrlSchema = z
   .string()
@@ -33,9 +34,16 @@ export const listCategoriesQuerySchema = z
     // Backwards/typo compatibility
     inlcudeChildren: booleanQuerySchema.optional()
   })
+  .merge(paginationQueryInputSchema)
   .transform((v) => ({
-    includeChildren: v.includeChildren ?? v.inlcudeChildren ?? true
-  }));
+    includeChildren: v.includeChildren ?? v.inlcudeChildren ?? true,
+    limit: v.limit ?? 10,
+    start: v.start ?? v.star ?? 0
+  }))
+  .superRefine((v, ctx) => {
+    if (v.limit < 0) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["limit"], message: "limit must be >= 0" });
+    if (v.start < 0) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["start"], message: "start must be >= 0" });
+  });
 
 export const createCategoryBodySchema = z.object({
   categoryName: z.string().min(1).max(200),

@@ -18,5 +18,6 @@ export interface CategoryRepository {
   findById(id: string): Promise<Category | null>;
   findAllByName(categoryName: string): Promise<Category[]>;
   listWithParents(): Promise<CategoryWithParent[]>;
+  countTopLevel(): Promise<number>;
 }
 

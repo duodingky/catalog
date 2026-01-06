@@ -2,6 +2,7 @@ import type { CategoryRepository, CreateCategoryInput, UpdateCategoryInput } fro
 import { BadRequestError, ConflictError, NotFoundError } from "../../shared/errors.js";
 import { isPgError, PG_ERROR } from "../../shared/pgErrors.js";
 import type { Category, CategoryNode, CategoryWithParent } from "./types.js";
+import { buildPagingMeta, type PagingMeta } from "../../shared/pagination.js";
 
 export class CategoryService {
   constructor(private readonly repo: CategoryRepository) {}
@@ -36,10 +37,27 @@ export class CategoryService {
     return includeChildren ? found : { ...found, children: [] };
   }
 
-  async list(includeChildren = true): Promise<CategoryNode[]> {
+  async listPaged(input: {
+    includeChildren?: boolean;
+    start: number;
+    limit: number;
+  }): Promise<{ data: CategoryNode[]; meta: PagingMeta }> {
     const rows = await this.repo.listWithParents();
     const tree = buildCategoryTree(rows);
-    return includeChildren ? tree : tree.map((n) => ({ ...n, children: [] }));
+    const totalRecord = await this.repo.countTopLevel();
+
+    const includeChildren = input.includeChildren ?? true;
+    const paged = tree.slice(input.start, input.start + input.limit);
+    const data = includeChildren ? paged : paged.map((n) => ({ ...n, children: [] }));
+
+    return {
+      data,
+      meta: buildPagingMeta({
+        totalRecord,
+        startRecord: input.start,
+        returnedCount: data.length
+      })
+    };
   }
 
   async update(id: string, input: UpdateCategoryInput): Promise<CategoryWithParent> {

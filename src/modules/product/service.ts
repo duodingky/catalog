@@ -4,6 +4,7 @@ import type { ProductRepository, CreateProductInput, UpdateProductInput } from "
 import type { Product } from "./types.js";
 import { BadRequestError, NotFoundError } from "../../shared/errors.js";
 import { isPgError, PG_ERROR } from "../../shared/pgErrors.js";
+import { buildPagingMeta, type PagingMeta } from "../../shared/pagination.js";
 
 export type CreateOrUpdateProductRequest = Omit<CreateProductInput, "brandId"> & {
   brandId?: string;
@@ -135,8 +136,16 @@ export class ProductService {
     return found;
   }
 
-  async list(): Promise<Product[]> {
-    return await this.repo.list();
+  async listPaged(input: { start: number; limit: number }): Promise<{ data: Product[]; meta: PagingMeta }> {
+    const { data, totalRecord } = await this.repo.listPaged(input);
+    return {
+      data,
+      meta: buildPagingMeta({
+        totalRecord,
+        startRecord: input.start,
+        returnedCount: data.length
+      })
+    };
   }
 
   async search(query: string): Promise<Product[]> {

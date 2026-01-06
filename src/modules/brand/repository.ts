@@ -13,5 +13,6 @@ export interface BrandRepository {
   findById(id: string): Promise<Brand | null>;
   findByName(brandName: string): Promise<Brand | null>;
   list(): Promise<Brand[]>;
+  listPaged(input: { start: number; limit: number }): Promise<{ data: Brand[]; totalRecord: number }>;
 }
 

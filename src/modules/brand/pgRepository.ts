@@ -76,5 +76,30 @@ export class PgBrandRepository implements BrandRepository {
 
     return res.rows.map((r) => ({ id: r.id, brandName: r.brand_name, imageUrl: r.image_url }));
   }
+
+  async listPaged(input: { start: number; limit: number }): Promise<{ data: Brand[]; totalRecord: number }> {
+    const countRes = await this.db.query<{ total: string }>("select count(*) as total from ecom.brands");
+    const totalRecord = Number(countRes.rows[0]?.total ?? 0);
+
+    const res = await this.db.query<{
+      id: string;
+      brand_name: string;
+      image_url: string | null;
+    }>(
+      `
+      select id, brand_name, image_url
+      from ecom.brands
+      order by brand_name asc
+      offset $1
+      limit $2
+      `,
+      [input.start, input.limit]
+    );
+
+    return {
+      totalRecord,
+      data: res.rows.map((r) => ({ id: r.id, brandName: r.brand_name, imageUrl: r.image_url }))
+    };
+  }
 }
 
