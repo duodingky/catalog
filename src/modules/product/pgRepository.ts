@@ -38,12 +38,13 @@ export class PgProductRepository implements ProductRepository {
       brand_name: string;
       price: string;
       image_url: string | null;
+      featured: boolean;
       short_desc: string | null;
       long_desc: string | null;
     }>(
       `
-      insert into ecom.products (product_name, category_id, brand_id, price, image_url, short_desc, long_desc)
-      values ($1, $2, $3, $4, $5, $6, $7)
+      insert into ecom.products (product_name, category_id, brand_id, price, image_url, featured, short_desc, long_desc)
+      values ($1, $2, $3, $4, $5, coalesce($6, false), $7, $8)
       returning
         id,
         product_name,
@@ -53,6 +54,7 @@ export class PgProductRepository implements ProductRepository {
         (select b.brand_name from ecom.brands b where b.id = brand_id) as brand_name,
         price,
         image_url,
+        featured,
         short_desc,
         long_desc
       `,
@@ -62,6 +64,7 @@ export class PgProductRepository implements ProductRepository {
         input.brandId,
         input.price,
         input.imageUrl ?? null,
+        input.featured ?? null,
         input.shortDesc ?? null,
         input.longDesc ?? null
       ]
@@ -78,6 +81,7 @@ export class PgProductRepository implements ProductRepository {
       brandName: row.brand_name,
       price: row.price,
       imageUrl: row.image_url,
+      featured: row.featured,
       shortDesc: row.short_desc,
       longDesc: row.long_desc
     };
@@ -93,6 +97,7 @@ export class PgProductRepository implements ProductRepository {
       brand_name: string;
       price: string;
       image_url: string | null;
+      featured: boolean;
       short_desc: string | null;
       long_desc: string | null;
     }>(
@@ -104,8 +109,9 @@ export class PgProductRepository implements ProductRepository {
         brand_id = coalesce($4, brand_id),
         price = coalesce($5, price),
         image_url = coalesce($6, image_url),
-        short_desc = coalesce($7, short_desc),
-        long_desc = coalesce($8, long_desc),
+        featured = coalesce($7, featured),
+        short_desc = coalesce($8, short_desc),
+        long_desc = coalesce($9, long_desc),
         updated_at = now()
       where id = $1
       returning
@@ -117,6 +123,7 @@ export class PgProductRepository implements ProductRepository {
         (select b.brand_name from ecom.brands b where b.id = brand_id) as brand_name,
         price,
         image_url,
+        featured,
         short_desc,
         long_desc
       `,
@@ -127,6 +134,7 @@ export class PgProductRepository implements ProductRepository {
         input.brandId ?? null,
         input.price ?? null,
         input.imageUrl ?? null,
+        input.featured ?? null,
         input.shortDesc ?? null,
         input.longDesc ?? null
       ]
@@ -143,6 +151,7 @@ export class PgProductRepository implements ProductRepository {
       brandName: row.brand_name,
       price: row.price,
       imageUrl: row.image_url,
+      featured: row.featured,
       shortDesc: row.short_desc,
       longDesc: row.long_desc
     };
@@ -158,6 +167,7 @@ export class PgProductRepository implements ProductRepository {
       brand_name: string;
       price: string;
       image_url: string | null;
+      featured: boolean;
       short_desc: string | null;
       long_desc: string | null;
     }>(
@@ -171,6 +181,7 @@ export class PgProductRepository implements ProductRepository {
         b.brand_name,
         p.price,
         p.image_url,
+        p.featured,
         p.short_desc,
         p.long_desc
       from ecom.products p
@@ -192,6 +203,7 @@ export class PgProductRepository implements ProductRepository {
       brandName: row.brand_name,
       price: row.price,
       imageUrl: row.image_url,
+      featured: row.featured,
       shortDesc: row.short_desc,
       longDesc: row.long_desc
     };
@@ -207,6 +219,7 @@ export class PgProductRepository implements ProductRepository {
       brand_name: string;
       price: string;
       image_url: string | null;
+      featured: boolean;
       short_desc: string | null;
       long_desc: string | null;
     }>(
@@ -220,6 +233,7 @@ export class PgProductRepository implements ProductRepository {
         b.brand_name,
         p.price,
         p.image_url,
+        p.featured,
         p.short_desc,
         p.long_desc
       from ecom.products p
@@ -238,6 +252,7 @@ export class PgProductRepository implements ProductRepository {
       brandName: row.brand_name,
       price: row.price,
       imageUrl: row.image_url,
+      featured: row.featured,
       shortDesc: row.short_desc,
       longDesc: row.long_desc
     }));
@@ -256,6 +271,7 @@ export class PgProductRepository implements ProductRepository {
       brand_name: string;
       price: string;
       image_url: string | null;
+      featured: boolean;
       short_desc: string | null;
       long_desc: string | null;
     }>(
@@ -269,6 +285,7 @@ export class PgProductRepository implements ProductRepository {
         b.brand_name,
         p.price,
         p.image_url,
+        p.featured,
         p.short_desc,
         p.long_desc
       from ecom.products p
@@ -292,6 +309,7 @@ export class PgProductRepository implements ProductRepository {
         brandName: row.brand_name,
         price: row.price,
         imageUrl: row.image_url,
+        featured: row.featured,
         shortDesc: row.short_desc,
         longDesc: row.long_desc
       }))
@@ -309,6 +327,7 @@ export class PgProductRepository implements ProductRepository {
       brand_name: string;
       price: string;
       image_url: string | null;
+      featured: boolean;
       short_desc: string | null;
       long_desc: string | null;
     }>(
@@ -322,6 +341,7 @@ export class PgProductRepository implements ProductRepository {
         b.brand_name,
         p.price,
         p.image_url,
+        p.featured,
         p.short_desc,
         p.long_desc
       from ecom.products p
@@ -346,6 +366,7 @@ export class PgProductRepository implements ProductRepository {
       brandName: row.brand_name,
       price: row.price,
       imageUrl: row.image_url,
+      featured: row.featured,
       shortDesc: row.short_desc,
       longDesc: row.long_desc
     }));

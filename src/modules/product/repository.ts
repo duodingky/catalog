@@ -6,6 +6,7 @@ export type CreateProductInput = {
   brandId: string;
   price: string;
   imageUrl?: string;
+  featured?: boolean;
   shortDesc?: string;
   longDesc?: string;
 };

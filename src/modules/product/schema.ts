@@ -39,6 +39,7 @@ export const createProductBodySchema = z
     categoryId: z.string().uuid(),
     price: priceSchema,
     imageUrl: imageUrlSchema.optional(),
+    featured: z.boolean().optional(),
     shortDesc: z.string().max(500).optional(),
     longDesc: z.string().max(5000).optional()
   })
@@ -59,6 +60,7 @@ export const updateProductBodySchema = z
     categoryId: z.string().uuid().optional(),
     price: priceSchema.optional(),
     imageUrl: imageUrlSchema.optional(),
+    featured: z.boolean().optional(),
     shortDesc: z.string().max(500).optional(),
     longDesc: z.string().max(5000).optional()
   })
@@ -69,6 +71,7 @@ export const updateProductBodySchema = z
       v.categoryId !== undefined ||
       v.price !== undefined ||
       v.imageUrl !== undefined ||
+      v.featured !== undefined ||
       v.shortDesc !== undefined ||
       v.longDesc !== undefined ||
       v.brandId !== undefined ||
