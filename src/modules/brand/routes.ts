@@ -9,8 +9,8 @@ export const registerBrandRoutes: FastifyPluginAsync = async (app) => {
   const service = new BrandService(repo);
 
   app.get("/", { preValidation: [app.authenticate, app.requirePermission("read")] }, async (req) => {
-    const { start, limit } = listBrandsQuerySchema.parse(req.query);
-    return await service.listPaged({ start, limit });
+    const { start, limit, featured } = listBrandsQuerySchema.parse(req.query);
+    return await service.listPaged({ start, limit, featured });
   });
 
   app.get(

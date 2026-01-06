@@ -138,7 +138,7 @@ export class ProductService {
     return found;
   }
 
-  async listPaged(input: { start: number; limit: number }): Promise<{ data: Product[]; meta: PagingMeta }> {
+  async listPaged(input: { start: number; limit: number; featured?: boolean }): Promise<{ data: Product[]; meta: PagingMeta }> {
     const { data, totalRecord } = await this.repo.listPaged(input);
     return {
       data,

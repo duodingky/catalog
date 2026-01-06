@@ -37,7 +37,7 @@ export class BrandService {
     }
   }
 
-  async listPaged(input: { start: number; limit: number }): Promise<{ data: Brand[]; meta: PagingMeta }> {
+  async listPaged(input: { start: number; limit: number; featured?: boolean }): Promise<{ data: Brand[]; meta: PagingMeta }> {
     const { data, totalRecord } = await this.repo.listPaged(input);
     return {
       data,

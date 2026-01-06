@@ -83,8 +83,15 @@ export class PgBrandRepository implements BrandRepository {
     return res.rows.map((r) => ({ id: r.id, brandName: r.brand_name, imageUrl: r.image_url, featured: r.featured }));
   }
 
-  async listPaged(input: { start: number; limit: number }): Promise<{ data: Brand[]; totalRecord: number }> {
-    const countRes = await this.db.query<{ total: string }>("select count(*) as total from ecom.brands");
+  async listPaged(input: { start: number; limit: number; featured?: boolean }): Promise<{ data: Brand[]; totalRecord: number }> {
+    const countRes = await this.db.query<{ total: string }>(
+      `
+      select count(*) as total
+      from ecom.brands
+      where ($1::boolean is null or featured = $1::boolean)
+      `,
+      [input.featured ?? null]
+    );
     const totalRecord = Number(countRes.rows[0]?.total ?? 0);
 
     const res = await this.db.query<{
@@ -96,11 +103,12 @@ export class PgBrandRepository implements BrandRepository {
       `
       select id, brand_name, image_url, featured
       from ecom.brands
+      where ($1::boolean is null or featured = $1::boolean)
       order by brand_name asc
-      offset $1
-      limit $2
+      offset $2
+      limit $3
       `,
-      [input.start, input.limit]
+      [input.featured ?? null, input.start, input.limit]
     );
 
     return {

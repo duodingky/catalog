@@ -258,8 +258,15 @@ export class PgProductRepository implements ProductRepository {
     }));
   }
 
-  async listPaged(input: { start: number; limit: number }): Promise<{ data: Product[]; totalRecord: number }> {
-    const countRes = await this.db.query<{ total: string }>("select count(*) as total from ecom.products");
+  async listPaged(input: { start: number; limit: number; featured?: boolean }): Promise<{ data: Product[]; totalRecord: number }> {
+    const countRes = await this.db.query<{ total: string }>(
+      `
+      select count(*) as total
+      from ecom.products p
+      where ($1::boolean is null or p.featured = $1::boolean)
+      `,
+      [input.featured ?? null]
+    );
     const totalRecord = Number(countRes.rows[0]?.total ?? 0);
 
     const res = await this.db.query<{
@@ -291,11 +298,12 @@ export class PgProductRepository implements ProductRepository {
       from ecom.products p
       join ecom.categories c on c.id = p.category_id
       join ecom.brands b on b.id = p.brand_id
+      where ($1::boolean is null or p.featured = $1::boolean)
       order by p.product_name asc
-      offset $1
-      limit $2
+      offset $2
+      limit $3
       `,
-      [input.start, input.limit]
+      [input.featured ?? null, input.start, input.limit]
     );
 
     return {

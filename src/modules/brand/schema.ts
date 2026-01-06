@@ -30,8 +30,24 @@ export const updateBrandBodySchema = z
     }
   });
 
-export const listBrandsQuerySchema = paginationQueryInputSchema
+const booleanQuerySchema = z.preprocess((v) => {
+  if (v === undefined) return undefined;
+  if (typeof v === "boolean") return v;
+  if (typeof v === "string") {
+    const lowered = v.trim().toLowerCase();
+    if (lowered === "true") return true;
+    if (lowered === "false") return false;
+  }
+  return v;
+}, z.boolean());
+
+export const listBrandsQuerySchema = z
+  .object({
+    featured: booleanQuerySchema.optional()
+  })
+  .merge(paginationQueryInputSchema)
   .transform((v) => ({
+    featured: v.featured,
     limit: v.limit ?? 10,
     start: v.start ?? v.star ?? 0
   }))
