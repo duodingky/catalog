@@ -3,6 +3,7 @@ import type { Brand } from "./types.js";
 export type CreateBrandInput = {
   brandName: string;
   imageUrl?: string;
+  featured?: boolean;
 };
 
 export type UpdateBrandInput = Partial<CreateBrandInput>;

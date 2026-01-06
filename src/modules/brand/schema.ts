@@ -14,16 +14,18 @@ export const brandIdParamSchema = z.object({
 
 export const createBrandBodySchema = z.object({
   brandName: z.string().min(1).max(200),
-  imageUrl: imageUrlSchema.optional()
+  imageUrl: imageUrlSchema.optional(),
+  featured: z.boolean().optional()
 });
 
 export const updateBrandBodySchema = z
   .object({
     brandName: z.string().min(1).max(200).optional(),
-    imageUrl: imageUrlSchema.optional()
+    imageUrl: imageUrlSchema.optional(),
+    featured: z.boolean().optional()
   })
   .superRefine((v, ctx) => {
-    if (v.brandName === undefined && v.imageUrl === undefined) {
+    if (v.brandName === undefined && v.imageUrl === undefined && v.featured === undefined) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Provide at least one field to update" });
     }
   });

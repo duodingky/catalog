@@ -3,6 +3,7 @@ import type { Category, CategoryWithParent } from "./types.js";
 export type CreateCategoryInput = {
   categoryName: string;
   imageUrl?: string;
+  featured?: boolean;
   parentId?: string;
   parentCategory?: string;
 };
@@ -10,10 +11,10 @@ export type CreateCategoryInput = {
 export type UpdateCategoryInput = Partial<CreateCategoryInput>;
 
 export interface CategoryRepository {
-  create(input: { categoryName: string; parentId: string; imageUrl?: string }): Promise<CategoryWithParent>;
+  create(input: { categoryName: string; parentId: string; imageUrl?: string; featured?: boolean }): Promise<CategoryWithParent>;
   update(
     id: string,
-    input: { categoryName?: string; imageUrl?: string; parentId?: string }
+    input: { categoryName?: string; imageUrl?: string; featured?: boolean; parentId?: string }
   ): Promise<CategoryWithParent | null>;
   findById(id: string): Promise<Category | null>;
   findAllByName(categoryName: string): Promise<Category[]>;

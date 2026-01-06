@@ -10,14 +10,15 @@ export class PgBrandRepository implements BrandRepository {
       id: string;
       brand_name: string;
       image_url: string | null;
+      featured: boolean;
     }>(
-      "insert into ecom.brands (brand_name, image_url) values ($1, $2) returning id, brand_name, image_url",
-      [input.brandName, input.imageUrl ?? null]
+      "insert into ecom.brands (brand_name, image_url, featured) values ($1, $2, coalesce($3, false)) returning id, brand_name, image_url, featured",
+      [input.brandName, input.imageUrl ?? null, input.featured ?? null]
     );
 
     const row = res.rows[0];
     if (!row) throw new Error("Failed to create brand");
-    return { id: row.id, brandName: row.brand_name, imageUrl: row.image_url };
+    return { id: row.id, brandName: row.brand_name, imageUrl: row.image_url, featured: row.featured };
   }
 
   async update(id: string, input: UpdateBrandInput): Promise<Brand | null> {
@@ -25,22 +26,24 @@ export class PgBrandRepository implements BrandRepository {
       id: string;
       brand_name: string;
       image_url: string | null;
+      featured: boolean;
     }>(
       `
       update ecom.brands
       set
         brand_name = coalesce($2, brand_name),
         image_url = coalesce($3, image_url),
+        featured = coalesce($4, featured),
         updated_at = now()
       where id = $1
-      returning id, brand_name, image_url
+      returning id, brand_name, image_url, featured
       `,
-      [id, input.brandName ?? null, input.imageUrl ?? null]
+      [id, input.brandName ?? null, input.imageUrl ?? null, input.featured ?? null]
     );
 
     const row = res.rows[0];
     if (!row) return null;
-    return { id: row.id, brandName: row.brand_name, imageUrl: row.image_url };
+    return { id: row.id, brandName: row.brand_name, imageUrl: row.image_url, featured: row.featured };
   }
 
   async findById(id: string): Promise<Brand | null> {
@@ -48,11 +51,12 @@ export class PgBrandRepository implements BrandRepository {
       id: string;
       brand_name: string;
       image_url: string | null;
-    }>("select id, brand_name, image_url from ecom.brands where id = $1", [id]);
+      featured: boolean;
+    }>("select id, brand_name, image_url, featured from ecom.brands where id = $1", [id]);
 
     const row = res.rows[0];
     if (!row) return null;
-    return { id: row.id, brandName: row.brand_name, imageUrl: row.image_url };
+    return { id: row.id, brandName: row.brand_name, imageUrl: row.image_url, featured: row.featured };
   }
 
   async findByName(brandName: string): Promise<Brand | null> {
@@ -60,11 +64,12 @@ export class PgBrandRepository implements BrandRepository {
       id: string;
       brand_name: string;
       image_url: string | null;
-    }>("select id, brand_name, image_url from ecom.brands where brand_name = $1", [brandName]);
+      featured: boolean;
+    }>("select id, brand_name, image_url, featured from ecom.brands where brand_name = $1", [brandName]);
 
     const row = res.rows[0];
     if (!row) return null;
-    return { id: row.id, brandName: row.brand_name, imageUrl: row.image_url };
+    return { id: row.id, brandName: row.brand_name, imageUrl: row.image_url, featured: row.featured };
   }
 
   async list(): Promise<Brand[]> {
@@ -72,9 +77,10 @@ export class PgBrandRepository implements BrandRepository {
       id: string;
       brand_name: string;
       image_url: string | null;
-    }>("select id, brand_name, image_url from ecom.brands order by brand_name asc");
+      featured: boolean;
+    }>("select id, brand_name, image_url, featured from ecom.brands order by brand_name asc");
 
-    return res.rows.map((r) => ({ id: r.id, brandName: r.brand_name, imageUrl: r.image_url }));
+    return res.rows.map((r) => ({ id: r.id, brandName: r.brand_name, imageUrl: r.image_url, featured: r.featured }));
   }
 
   async listPaged(input: { start: number; limit: number }): Promise<{ data: Brand[]; totalRecord: number }> {
@@ -85,9 +91,10 @@ export class PgBrandRepository implements BrandRepository {
       id: string;
       brand_name: string;
       image_url: string | null;
+      featured: boolean;
     }>(
       `
-      select id, brand_name, image_url
+      select id, brand_name, image_url, featured
       from ecom.brands
       order by brand_name asc
       offset $1
@@ -98,7 +105,7 @@ export class PgBrandRepository implements BrandRepository {
 
     return {
       totalRecord,
-      data: res.rows.map((r) => ({ id: r.id, brandName: r.brand_name, imageUrl: r.image_url }))
+      data: res.rows.map((r) => ({ id: r.id, brandName: r.brand_name, imageUrl: r.image_url, featured: r.featured }))
     };
   }
 }
