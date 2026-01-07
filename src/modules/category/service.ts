@@ -13,7 +13,8 @@ export class CategoryService {
       return await this.repo.create({
         categoryName: input.categoryName,
         parentId: resolvedParentId,
-        imageUrl: input.imageUrl
+        imageUrl: input.imageUrl,
+        featured: input.featured
       });
     } catch (err) {
       if (isPgError(err) && err.code === PG_ERROR.UNIQUE_VIOLATION) {
@@ -78,6 +79,7 @@ export class CategoryService {
       const updated = await this.repo.update(id, {
         categoryName: input.categoryName,
         imageUrl: input.imageUrl,
+        featured: input.featured,
         parentId: resolvedParentId
       });
 
@@ -117,6 +119,7 @@ function buildCategoryTree(rows: CategoryWithParent[]): CategoryNode[] {
       id: r.id,
       categoryName: r.categoryName,
       imageUrl: r.imageUrl,
+      featured: r.featured,
       parentId: r.parentId,
       children: []
     });

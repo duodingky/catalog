@@ -72,6 +72,7 @@ export class ProductService {
         brandId,
         price: input.price,
         imageUrl: input.imageUrl,
+        featured: input.featured,
         shortDesc: input.shortDesc,
         longDesc: input.longDesc
       });
@@ -113,6 +114,7 @@ export class ProductService {
         categoryId: input.categoryId,
         price: input.price,
         imageUrl: input.imageUrl,
+        featured: input.featured,
         shortDesc: input.shortDesc,
         longDesc: input.longDesc
       };
@@ -136,7 +138,7 @@ export class ProductService {
     return found;
   }
 
-  async listPaged(input: { start: number; limit: number }): Promise<{ data: Product[]; meta: PagingMeta }> {
+  async listPaged(input: { start: number; limit: number; featured?: boolean }): Promise<{ data: Product[]; meta: PagingMeta }> {
     const { data, totalRecord } = await this.repo.listPaged(input);
     return {
       data,

@@ -9,6 +9,7 @@ export class PgCategoryRepository implements CategoryRepository {
     categoryName: string;
     parentId: string;
     imageUrl?: string;
+    featured?: boolean;
   }): Promise<CategoryWithParent> {
     const client = await this.db.connect();
     try {
@@ -18,14 +19,15 @@ export class PgCategoryRepository implements CategoryRepository {
         id: string;
         category_name: string;
         image_url: string | null;
+        featured: boolean;
         parent_id: string | null;
       }>(
         `
-        insert into ecom.categories (category_name, parent_id, image_url)
-        values ($1, $2, $3)
-        returning id, category_name, parent_id, image_url
+        insert into ecom.categories (category_name, parent_id, image_url, featured)
+        values ($1, $2, $3, coalesce($4, false))
+        returning id, category_name, parent_id, image_url, featured
         `,
-        [input.categoryName, input.parentId === "0" ? null : input.parentId, input.imageUrl ?? null]
+        [input.categoryName, input.parentId === "0" ? null : input.parentId, input.imageUrl ?? null, input.featured ?? null]
       );
 
       const row = created.rows[0];
@@ -36,6 +38,7 @@ export class PgCategoryRepository implements CategoryRepository {
         id: row.id,
         categoryName: row.category_name,
         imageUrl: row.image_url,
+        featured: row.featured,
         parentId: row.parent_id ?? "0"
       };
     } catch (err) {
@@ -48,12 +51,13 @@ export class PgCategoryRepository implements CategoryRepository {
 
   async update(
     id: string,
-    input: { categoryName?: string; imageUrl?: string; parentId?: string }
+    input: { categoryName?: string; imageUrl?: string; featured?: boolean; parentId?: string }
   ): Promise<CategoryWithParent | null> {
     const res = await this.db.query<{
       id: string;
       category_name: string;
       image_url: string | null;
+      featured: boolean;
       parent_id: string | null;
     }>(
       `
@@ -61,16 +65,17 @@ export class PgCategoryRepository implements CategoryRepository {
       set
         category_name = coalesce($2, category_name),
         image_url = coalesce($3, image_url),
+        featured = coalesce($4, featured),
         parent_id = case
-          when $4 is null then parent_id
-          when $4 = '0' then null
-          else $4::uuid
+          when $5 is null then parent_id
+          when $5 = '0' then null
+          else $5::uuid
         end,
         updated_at = now()
       where id = $1
-      returning id, category_name, parent_id, image_url
+      returning id, category_name, parent_id, image_url, featured
       `,
-      [id, input.categoryName ?? null, input.imageUrl ?? null, input.parentId ?? null]
+      [id, input.categoryName ?? null, input.imageUrl ?? null, input.featured ?? null, input.parentId ?? null]
     );
 
     const row = res.rows[0];
@@ -79,6 +84,7 @@ export class PgCategoryRepository implements CategoryRepository {
       id: row.id,
       categoryName: row.category_name,
       imageUrl: row.image_url,
+      featured: row.featured,
       parentId: row.parent_id ?? "0"
     };
   }
@@ -88,11 +94,12 @@ export class PgCategoryRepository implements CategoryRepository {
       id: string;
       category_name: string;
       image_url: string | null;
-    }>("select id, category_name, image_url from ecom.categories where id = $1", [id]);
+      featured: boolean;
+    }>("select id, category_name, image_url, featured from ecom.categories where id = $1", [id]);
 
     const row = res.rows[0];
     if (!row) return null;
-    return { id: row.id, categoryName: row.category_name, imageUrl: row.image_url };
+    return { id: row.id, categoryName: row.category_name, imageUrl: row.image_url, featured: row.featured };
   }
 
   async findAllByName(categoryName: string): Promise<Category[]> {
@@ -100,12 +107,13 @@ export class PgCategoryRepository implements CategoryRepository {
       id: string;
       category_name: string;
       image_url: string | null;
+      featured: boolean;
     }>(
-      "select id, category_name, image_url from ecom.categories where lower(category_name) = lower($1) order by category_name asc",
+      "select id, category_name, image_url, featured from ecom.categories where lower(category_name) = lower($1) order by category_name asc",
       [categoryName]
     );
 
-    return res.rows.map((r) => ({ id: r.id, categoryName: r.category_name, imageUrl: r.image_url }));
+    return res.rows.map((r) => ({ id: r.id, categoryName: r.category_name, imageUrl: r.image_url, featured: r.featured }));
   }
 
   async listWithParents(): Promise<CategoryWithParent[]> {
@@ -113,6 +121,7 @@ export class PgCategoryRepository implements CategoryRepository {
       id: string;
       category_name: string;
       image_url: string | null;
+      featured: boolean;
       parent_id: string | null;
     }>(
       `
@@ -120,6 +129,7 @@ export class PgCategoryRepository implements CategoryRepository {
         c.id,
         c.category_name,
         c.image_url,
+        c.featured,
         c.parent_id
       from ecom.categories c
       order by c.category_name asc
@@ -130,6 +140,7 @@ export class PgCategoryRepository implements CategoryRepository {
       id: r.id,
       categoryName: r.category_name,
       imageUrl: r.image_url,
+      featured: r.featured,
       parentId: r.parent_id ?? "0"
     }));
   }

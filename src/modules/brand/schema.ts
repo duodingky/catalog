@@ -14,22 +14,40 @@ export const brandIdParamSchema = z.object({
 
 export const createBrandBodySchema = z.object({
   brandName: z.string().min(1).max(200),
-  imageUrl: imageUrlSchema.optional()
+  imageUrl: imageUrlSchema.optional(),
+  featured: z.boolean().optional()
 });
 
 export const updateBrandBodySchema = z
   .object({
     brandName: z.string().min(1).max(200).optional(),
-    imageUrl: imageUrlSchema.optional()
+    imageUrl: imageUrlSchema.optional(),
+    featured: z.boolean().optional()
   })
   .superRefine((v, ctx) => {
-    if (v.brandName === undefined && v.imageUrl === undefined) {
+    if (v.brandName === undefined && v.imageUrl === undefined && v.featured === undefined) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Provide at least one field to update" });
     }
   });
 
-export const listBrandsQuerySchema = paginationQueryInputSchema
+const booleanQuerySchema = z.preprocess((v) => {
+  if (v === undefined) return undefined;
+  if (typeof v === "boolean") return v;
+  if (typeof v === "string") {
+    const lowered = v.trim().toLowerCase();
+    if (lowered === "true") return true;
+    if (lowered === "false") return false;
+  }
+  return v;
+}, z.boolean());
+
+export const listBrandsQuerySchema = z
+  .object({
+    featured: booleanQuerySchema.optional()
+  })
+  .merge(paginationQueryInputSchema)
   .transform((v) => ({
+    featured: v.featured,
     limit: v.limit ?? 10,
     start: v.start ?? v.star ?? 0
   }))

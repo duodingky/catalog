@@ -6,6 +6,7 @@ export type CreateProductInput = {
   brandId: string;
   price: string;
   imageUrl?: string;
+  featured?: boolean;
   shortDesc?: string;
   longDesc?: string;
 };
@@ -23,7 +24,7 @@ export interface ProductRepository {
   update(id: string, input: UpdateProductInput): Promise<Product | null>;
   findById(id: string): Promise<Product | null>;
   list(): Promise<Product[]>;
-  listPaged(input: { start: number; limit: number }): Promise<{ data: Product[]; totalRecord: number }>;
+  listPaged(input: { start: number; limit: number; featured?: boolean }): Promise<{ data: Product[]; totalRecord: number }>;
   search(query: string): Promise<Product[]>;
 }
 

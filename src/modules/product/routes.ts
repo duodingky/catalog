@@ -22,8 +22,8 @@ export const registerProductRoutes: FastifyPluginAsync = async (app) => {
     "/",
     { preValidation: [app.authenticate, app.requirePermission("read")] },
     async (req) => {
-      const { start, limit } = listProductsQuerySchema.parse(req.query);
-      return await service.listPaged({ start, limit });
+      const { start, limit, featured } = listProductsQuerySchema.parse(req.query);
+      return await service.listPaged({ start, limit, featured });
     }
   );
 
