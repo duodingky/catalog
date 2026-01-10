@@ -150,6 +150,10 @@ export class ProductService {
     };
   }
 
+  async getByCategoryId(categoryId: string): Promise<Product[]> {
+    return await this.repo.listByCategoryId(categoryId);
+  }
+
   async search(query: string): Promise<Product[]> {
     return await this.repo.search(query);
   }
