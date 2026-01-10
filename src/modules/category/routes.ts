@@ -3,7 +3,6 @@ import { pool } from "../../db/pool.js";
 import { PgCategoryRepository } from "./pgRepository.js";
 import { CategoryService } from "./service.js";
 import {
-  categoryIdOrZeroParamSchema,
   categoryIdParamSchema,
   createCategoryBodySchema,
   listCategoriesQuerySchema,
@@ -23,14 +22,14 @@ export const registerCategoryRoutes: FastifyPluginAsync = async (app) => {
     "/:id",
     { preValidation: [app.authenticate, app.requirePermission("read")] },
     async (req) => {
-      const { includeChildren, start, limit } = listCategoriesQuerySchema.parse(req.query);
-      const { id } = categoryIdOrZeroParamSchema.parse(req.params);
+      const { includeChildren } = listCategoriesQuerySchema.parse(req.query);
+      const { id } = categoryIdParamSchema.parse(req.params);
 
-      if (id === "0") {
-        return await service.listPaged({ includeChildren, start, limit });
-      }
-
-      return await service.getByIdWithChildren(id, includeChildren);
+      const category = await service.getByIdWithChildren(id, includeChildren);
+      return {
+        data: category,
+        meta: { totalRecord: 1, startRecord: 0, endRecord: 0 }
+      };
     }
   );
 
