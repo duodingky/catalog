@@ -4,6 +4,7 @@ import { PgBrandRepository } from "../brand/pgRepository.js";
 import { PgCategoryRepository } from "../category/pgRepository.js";
 import { PgProductRepository } from "./pgRepository.js";
 import { ProductService } from "./service.js";
+import { buildPagingMeta } from "../../shared/pagination.js";
 import {
   createProductBodySchema,
   listProductsQuerySchema,
@@ -32,7 +33,15 @@ export const registerProductRoutes: FastifyPluginAsync = async (app) => {
     { preValidation: [app.authenticate, app.requirePermission("read")] },
     async (req) => {
       const { q } = productSearchQuerySchema.parse(req.query);
-      return await service.search(q);
+      const data = await service.search(q);
+      return {
+        data,
+        meta: buildPagingMeta({
+          totalRecord: data.length,
+          startRecord: 0,
+          returnedCount: data.length
+        })
+      };
     }
   );
 
