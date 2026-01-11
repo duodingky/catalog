@@ -88,17 +88,18 @@ export const updateProductBodySchema = z
 export const productSearchQuerySchema = z
   .object({
     q: z.string().min(1).max(200).optional(),
-    query: z.string().min(1).max(200).optional()
+    query: z.string().min(1).max(200).optional(),
+    category: z.string().min(1).max(200).optional()
   })
   .transform((v) => ({
-    q: (v.q ?? v.query ?? "").trim()
+    q: (v.q ?? v.query ?? "").trim(),
+    category: v.category?.trim() || undefined
   }))
   .superRefine((v, ctx) => {
-    if (!v.q) {
+    if (!v.q && !v.category) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ["q"],
-        message: "Provide q (search query)"
+        message: "Provide at least one query param: q or category"
       });
     }
   });

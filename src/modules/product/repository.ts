@@ -25,6 +25,6 @@ export interface ProductRepository {
   findById(id: string): Promise<Product | null>;
   list(): Promise<Product[]>;
   listPaged(input: { start: number; limit: number; featured?: boolean }): Promise<{ data: Product[]; totalRecord: number }>;
-  search(query: string): Promise<Product[]>;
+  search(input: { q?: string; categoryIds?: string[] }): Promise<Product[]>;
 }
 
