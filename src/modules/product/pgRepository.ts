@@ -324,9 +324,8 @@ export class PgProductRepository implements ProductRepository {
     };
   }
 
-  async search(input: { q?: string; categoryIds?: string[] }): Promise<Product[]> {
-    const q = input.q ? `%${input.q}%` : null;
-    const categoryIds = input.categoryIds?.length ? input.categoryIds : null;
+  async search(query: string): Promise<Product[]> {
+    const q = `%${query}%`;
     const res = await this.db.query<{
       id: string;
       product_name: string;
@@ -356,22 +355,14 @@ export class PgProductRepository implements ProductRepository {
       from ecom.products p
       join ecom.categories c on c.id = p.category_id
       join ecom.brands b on b.id = p.brand_id
-      where
-        (
-          $1::text is null
-          or p.product_name ilike $1
-          or coalesce(p.short_desc, '') ilike $1
-          or coalesce(p.long_desc, '') ilike $1
-          or c.category_name ilike $1
-          or b.brand_name ilike $1
-        )
-        and (
-          $2::uuid[] is null
-          or p.category_id = any($2::uuid[])
-        )
+      where p.product_name ilike $1
+         or coalesce(p.short_desc, '') ilike $1
+         or coalesce(p.long_desc, '') ilike $1
+         or c.category_name ilike $1
+         or b.brand_name ilike $1
       order by p.product_name asc
       `,
-      [q, categoryIds]
+      [q]
     );
 
     return res.rows.map((row) => ({

@@ -31,8 +31,8 @@ export const registerProductRoutes: FastifyPluginAsync = async (app) => {
     "/search",
     { preValidation: [app.authenticate, app.requirePermission("read")] },
     async (req) => {
-      const { q, category } = productSearchQuerySchema.parse(req.query);
-      return await service.search({ q, category });
+      const { q } = productSearchQuerySchema.parse(req.query);
+      return await service.search(q);
     }
   );
 
