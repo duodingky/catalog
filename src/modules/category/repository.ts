@@ -34,6 +34,7 @@ export interface CategoryRepository {
   ): Promise<CategoryWithParent | null>;
   findById(id: string): Promise<Category | null>;
   findAllByName(categoryName: string): Promise<Category[]>;
+  findDescendantIds(rootIds: string[]): Promise<string[]>;
   listWithParents(): Promise<CategoryWithParent[]>;
   countTopLevel(): Promise<number>;
 }
