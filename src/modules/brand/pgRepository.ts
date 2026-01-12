@@ -11,14 +11,27 @@ export class PgBrandRepository implements BrandRepository {
       brand_name: string;
       image_url: string | null;
       featured: boolean;
+      short_desc: string | null;
+      long_desc: string | null;
     }>(
-      "insert into ecom.brands (brand_name, image_url, featured) values ($1, $2, coalesce($3, false)) returning id, brand_name, image_url, featured",
-      [input.brandName, input.imageUrl ?? null, input.featured ?? null]
+      `
+      insert into ecom.brands (brand_name, image_url, featured, short_desc, long_desc)
+      values ($1, $2, coalesce($3, false), $4, $5)
+      returning id, brand_name, image_url, featured, short_desc, long_desc
+      `,
+      [input.brandName, input.imageUrl ?? null, input.featured ?? null, input.shortDesc ?? null, input.longDesc ?? null]
     );
 
     const row = res.rows[0];
     if (!row) throw new Error("Failed to create brand");
-    return { id: row.id, brandName: row.brand_name, imageUrl: row.image_url, featured: row.featured };
+    return {
+      id: row.id,
+      brandName: row.brand_name,
+      imageUrl: row.image_url,
+      featured: row.featured,
+      shortDesc: row.short_desc,
+      longDesc: row.long_desc
+    };
   }
 
   async update(id: string, input: UpdateBrandInput): Promise<Brand | null> {
@@ -27,6 +40,8 @@ export class PgBrandRepository implements BrandRepository {
       brand_name: string;
       image_url: string | null;
       featured: boolean;
+      short_desc: string | null;
+      long_desc: string | null;
     }>(
       `
       update ecom.brands
@@ -34,16 +49,25 @@ export class PgBrandRepository implements BrandRepository {
         brand_name = coalesce($2, brand_name),
         image_url = coalesce($3, image_url),
         featured = coalesce($4, featured),
+        short_desc = coalesce($5, short_desc),
+        long_desc = coalesce($6, long_desc),
         updated_at = now()
       where id = $1
-      returning id, brand_name, image_url, featured
+      returning id, brand_name, image_url, featured, short_desc, long_desc
       `,
-      [id, input.brandName ?? null, input.imageUrl ?? null, input.featured ?? null]
+      [id, input.brandName ?? null, input.imageUrl ?? null, input.featured ?? null, input.shortDesc ?? null, input.longDesc ?? null]
     );
 
     const row = res.rows[0];
     if (!row) return null;
-    return { id: row.id, brandName: row.brand_name, imageUrl: row.image_url, featured: row.featured };
+    return {
+      id: row.id,
+      brandName: row.brand_name,
+      imageUrl: row.image_url,
+      featured: row.featured,
+      shortDesc: row.short_desc,
+      longDesc: row.long_desc
+    };
   }
 
   async findById(id: string): Promise<Brand | null> {
@@ -52,11 +76,20 @@ export class PgBrandRepository implements BrandRepository {
       brand_name: string;
       image_url: string | null;
       featured: boolean;
-    }>("select id, brand_name, image_url, featured from ecom.brands where id = $1", [id]);
+      short_desc: string | null;
+      long_desc: string | null;
+    }>("select id, brand_name, image_url, featured, short_desc, long_desc from ecom.brands where id = $1", [id]);
 
     const row = res.rows[0];
     if (!row) return null;
-    return { id: row.id, brandName: row.brand_name, imageUrl: row.image_url, featured: row.featured };
+    return {
+      id: row.id,
+      brandName: row.brand_name,
+      imageUrl: row.image_url,
+      featured: row.featured,
+      shortDesc: row.short_desc,
+      longDesc: row.long_desc
+    };
   }
 
   async findByName(brandName: string): Promise<Brand | null> {
@@ -65,14 +98,20 @@ export class PgBrandRepository implements BrandRepository {
       brand_name: string;
       image_url: string | null;
       featured: boolean;
-    }>(
-      "select id, brand_name, image_url, featured from ecom.brands where lower(brand_name) = lower($1)",
-      [brandName]
-    );
+      short_desc: string | null;
+      long_desc: string | null;
+    }>("select id, brand_name, image_url, featured, short_desc, long_desc from ecom.brands where brand_name = $1", [brandName]);
 
     const row = res.rows[0];
     if (!row) return null;
-    return { id: row.id, brandName: row.brand_name, imageUrl: row.image_url, featured: row.featured };
+    return {
+      id: row.id,
+      brandName: row.brand_name,
+      imageUrl: row.image_url,
+      featured: row.featured,
+      shortDesc: row.short_desc,
+      longDesc: row.long_desc
+    };
   }
 
   async list(): Promise<Brand[]> {
@@ -81,9 +120,18 @@ export class PgBrandRepository implements BrandRepository {
       brand_name: string;
       image_url: string | null;
       featured: boolean;
-    }>("select id, brand_name, image_url, featured from ecom.brands order by brand_name asc");
+      short_desc: string | null;
+      long_desc: string | null;
+    }>("select id, brand_name, image_url, featured, short_desc, long_desc from ecom.brands order by brand_name asc");
 
-    return res.rows.map((r) => ({ id: r.id, brandName: r.brand_name, imageUrl: r.image_url, featured: r.featured }));
+    return res.rows.map((r) => ({
+      id: r.id,
+      brandName: r.brand_name,
+      imageUrl: r.image_url,
+      featured: r.featured,
+      shortDesc: r.short_desc,
+      longDesc: r.long_desc
+    }));
   }
 
   async listPaged(input: { start: number; limit: number; featured?: boolean }): Promise<{ data: Brand[]; totalRecord: number }> {
@@ -102,9 +150,11 @@ export class PgBrandRepository implements BrandRepository {
       brand_name: string;
       image_url: string | null;
       featured: boolean;
+      short_desc: string | null;
+      long_desc: string | null;
     }>(
       `
-      select id, brand_name, image_url, featured
+      select id, brand_name, image_url, featured, short_desc, long_desc
       from ecom.brands
       where ($1::boolean is null or featured = $1::boolean)
       order by brand_name asc
@@ -116,7 +166,14 @@ export class PgBrandRepository implements BrandRepository {
 
     return {
       totalRecord,
-      data: res.rows.map((r) => ({ id: r.id, brandName: r.brand_name, imageUrl: r.image_url, featured: r.featured }))
+      data: res.rows.map((r) => ({
+        id: r.id,
+        brandName: r.brand_name,
+        imageUrl: r.image_url,
+        featured: r.featured,
+        shortDesc: r.short_desc,
+        longDesc: r.long_desc
+      }))
     };
   }
 }

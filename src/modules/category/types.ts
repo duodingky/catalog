@@ -3,6 +3,8 @@ export type Category = {
   categoryName: string;
   imageUrl: string | null;
   featured: boolean;
+  shortDesc: string | null;
+  longDesc: string | null;
 };
 
 export type CategoryWithParent = Category & {

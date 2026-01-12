@@ -4,6 +4,8 @@ export type CreateBrandInput = {
   brandName: string;
   imageUrl?: string;
   featured?: boolean;
+  shortDesc?: string;
+  longDesc?: string;
 };
 
 export type UpdateBrandInput = Partial<CreateBrandInput>;
