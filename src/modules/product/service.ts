@@ -18,48 +18,6 @@ export class ProductService {
     private readonly categoryRepo: CategoryRepository
   ) {}
 
-  private isUuid(value: string): boolean {
-    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
-  }
-
-  private async resolveCategoryAndDescendants(category: string): Promise<string[]> {
-    const trimmed = category.trim();
-    if (!trimmed) return [];
-
-    const startingIds: string[] = [];
-    if (this.isUuid(trimmed)) {
-      const found = await this.categoryRepo.findById(trimmed);
-      if (!found) throw new BadRequestError("Invalid category");
-      startingIds.push(found.id);
-    } else {
-      const found = await this.categoryRepo.findAllByName(trimmed);
-      if (!found.length) throw new BadRequestError("Invalid category");
-      startingIds.push(...found.map((c) => c.id));
-    }
-
-    const all = await this.categoryRepo.listWithParents();
-    const childrenByParent = new Map<string, string[]>();
-    for (const c of all) {
-      const parentKey = c.parentId;
-      const arr = childrenByParent.get(parentKey);
-      if (arr) arr.push(c.id);
-      else childrenByParent.set(parentKey, [c.id]);
-    }
-
-    const out = new Set<string>();
-    const queue: string[] = [...startingIds];
-    while (queue.length) {
-      const id = queue.shift();
-      if (!id) continue;
-      if (out.has(id)) continue;
-      out.add(id);
-      const children = childrenByParent.get(id) ?? [];
-      for (const childId of children) queue.push(childId);
-    }
-
-    return [...out];
-  }
-
   private async validateCategoryId(categoryId: string): Promise<void> {
     const found = await this.categoryRepo.findById(categoryId);
     if (!found) throw new BadRequestError("Invalid categoryId");
@@ -192,19 +150,12 @@ export class ProductService {
     };
   }
 
-  async search(input: { q?: string; category?: string }): Promise<Product[]> {
-    const q = (input.q ?? "").trim();
-    if (q.toUpperCase() === "ALL_PRODUCT") {
-      return await this.repo.list();
-    }
+  async getByCategoryId(categoryId: string): Promise<Product[]> {
+    return await this.repo.listByCategoryId(categoryId);
+  }
 
-    const category = (input.category ?? "").trim();
-    const categoryIds = category ? await this.resolveCategoryAndDescendants(category) : undefined;
-
-    return await this.repo.search({
-      q: q || undefined,
-      categoryIds
-    });
+  async search(query: string): Promise<Product[]> {
+    return await this.repo.search(query);
   }
 }
 

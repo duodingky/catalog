@@ -5,6 +5,10 @@ export const productIdParamSchema = z.object({
   id: z.string().uuid()
 });
 
+export const categoryIdParamSchema = z.object({
+  id: z.string().uuid()
+});
+
 const imageUrlSchema = z
   .string()
   .url()
@@ -88,18 +92,17 @@ export const updateProductBodySchema = z
 export const productSearchQuerySchema = z
   .object({
     q: z.string().min(1).max(200).optional(),
-    query: z.string().min(1).max(200).optional(),
-    category: z.string().min(1).max(200).optional()
+    query: z.string().min(1).max(200).optional()
   })
   .transform((v) => ({
-    q: (v.q ?? v.query ?? "").trim(),
-    category: v.category?.trim() || undefined
+    q: (v.q ?? v.query ?? "").trim()
   }))
   .superRefine((v, ctx) => {
-    if (!v.q && !v.category) {
+    if (!v.q) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Provide at least one query param: q or category"
+        path: ["q"],
+        message: "Provide q (search query)"
       });
     }
   });
