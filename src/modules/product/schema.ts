@@ -5,6 +5,10 @@ export const productIdParamSchema = z.object({
   id: z.string().uuid()
 });
 
+export const categoryIdParamSchema = z.object({
+  id: z.string().uuid()
+});
+
 const imageUrlSchema = z
   .string()
   .url()

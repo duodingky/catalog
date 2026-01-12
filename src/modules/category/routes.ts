@@ -30,7 +30,11 @@ export const registerCategoryRoutes: FastifyPluginAsync = async (app) => {
         return await service.listPaged({ includeChildren, start, limit });
       }
 
-      return await service.getByIdWithChildren(id, includeChildren);
+      const category = await service.getByIdWithChildren(id, includeChildren);
+      return {
+        data: category,
+        meta: { totalRecord: 1, startRecord: 0, endRecord: 0 }
+      };
     }
   );
 
