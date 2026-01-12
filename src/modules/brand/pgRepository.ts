@@ -65,7 +65,10 @@ export class PgBrandRepository implements BrandRepository {
       brand_name: string;
       image_url: string | null;
       featured: boolean;
-    }>("select id, brand_name, image_url, featured from ecom.brands where brand_name = $1", [brandName]);
+    }>(
+      "select id, brand_name, image_url, featured from ecom.brands where lower(brand_name) = lower($1)",
+      [brandName]
+    );
 
     const row = res.rows[0];
     if (!row) return null;

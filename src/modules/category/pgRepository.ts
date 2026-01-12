@@ -116,6 +116,29 @@ export class PgCategoryRepository implements CategoryRepository {
     return res.rows.map((r) => ({ id: r.id, categoryName: r.category_name, imageUrl: r.image_url, featured: r.featured }));
   }
 
+  async findDescendantIds(rootIds: string[]): Promise<string[]> {
+    if (rootIds.length === 0) return [];
+
+    const res = await this.db.query<{ id: string }>(
+      `
+      with recursive category_tree as (
+        select c.id
+        from ecom.categories c
+        where c.id = any($1::uuid[])
+        union all
+        select child.id
+        from ecom.categories child
+        join category_tree t on child.parent_id = t.id
+      )
+      select distinct id
+      from category_tree
+      `,
+      [rootIds]
+    );
+
+    return res.rows.map((r) => r.id);
+  }
+
   async listWithParents(): Promise<CategoryWithParent[]> {
     const res = await this.db.query<{
       id: string;

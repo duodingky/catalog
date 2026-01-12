@@ -11,6 +11,8 @@ export type CreateOrUpdateProductRequest = Omit<CreateProductInput, "brandId"> &
   brandName?: string;
 };
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export class ProductService {
   constructor(
     private readonly repo: ProductRepository,
@@ -154,8 +156,42 @@ export class ProductService {
     return await this.repo.listByCategoryId(categoryId);
   }
 
-  async search(query: string): Promise<Product[]> {
-    return await this.repo.search(query);
+  async search(input: { q?: string; category?: string; brand?: string }): Promise<Product[]> {
+    const q = input.q?.trim() ? input.q.trim() : undefined;
+    const category = input.category?.trim() ? input.category.trim() : undefined;
+    const brand = input.brand?.trim() ? input.brand.trim() : undefined;
+
+    let categoryIds: string[] | undefined;
+    if (category) {
+      const rootIds: string[] = [];
+
+      if (UUID_RE.test(category)) {
+        const found = await this.categoryRepo.findById(category);
+        if (!found) throw new BadRequestError("Invalid category");
+        rootIds.push(category);
+      } else {
+        const matches = await this.categoryRepo.findAllByName(category);
+        if (matches.length === 0) throw new BadRequestError("Invalid category");
+        rootIds.push(...matches.map((c) => c.id));
+      }
+
+      categoryIds = await this.categoryRepo.findDescendantIds([...new Set(rootIds)]);
+    }
+
+    let brandId: string | undefined;
+    if (brand) {
+      if (UUID_RE.test(brand)) {
+        const found = await this.brandRepo.findById(brand);
+        if (!found) throw new BadRequestError("Invalid brand");
+        brandId = brand;
+      } else {
+        const found = await this.brandRepo.findByName(brand);
+        if (!found) throw new BadRequestError("Invalid brand");
+        brandId = found.id;
+      }
+    }
+
+    return await this.repo.search({ q, categoryIds, brandId });
   }
 }
 
