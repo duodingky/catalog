@@ -3,5 +3,7 @@ export type Brand = {
   brandName: string;
   imageUrl: string | null;
   featured: boolean;
+  shortDesc: string | null;
+  longDesc: string | null;
 };
 

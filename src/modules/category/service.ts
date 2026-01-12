@@ -14,7 +14,9 @@ export class CategoryService {
         categoryName: input.categoryName,
         parentId: resolvedParentId,
         imageUrl: input.imageUrl,
-        featured: input.featured
+        featured: input.featured,
+        shortDesc: input.shortDesc,
+        longDesc: input.longDesc
       });
     } catch (err) {
       if (isPgError(err) && err.code === PG_ERROR.UNIQUE_VIOLATION) {
@@ -80,6 +82,8 @@ export class CategoryService {
         categoryName: input.categoryName,
         imageUrl: input.imageUrl,
         featured: input.featured,
+        shortDesc: input.shortDesc,
+        longDesc: input.longDesc,
         parentId: resolvedParentId
       });
 
@@ -120,6 +124,8 @@ function buildCategoryTree(rows: CategoryWithParent[]): CategoryNode[] {
       categoryName: r.categoryName,
       imageUrl: r.imageUrl,
       featured: r.featured,
+      shortDesc: r.shortDesc,
+      longDesc: r.longDesc,
       parentId: r.parentId,
       children: []
     });
