@@ -10,6 +10,8 @@ export class PgCategoryRepository implements CategoryRepository {
     parentId: string;
     imageUrl?: string;
     featured?: boolean;
+    shortDesc?: string;
+    longDesc?: string;
   }): Promise<CategoryWithParent> {
     const client = await this.db.connect();
     try {
@@ -21,13 +23,22 @@ export class PgCategoryRepository implements CategoryRepository {
         image_url: string | null;
         featured: boolean;
         parent_id: string | null;
+        short_desc: string | null;
+        long_desc: string | null;
       }>(
         `
-        insert into ecom.categories (category_name, parent_id, image_url, featured)
-        values ($1, $2, $3, coalesce($4, false))
-        returning id, category_name, parent_id, image_url, featured
+        insert into ecom.categories (category_name, parent_id, image_url, featured, short_desc, long_desc)
+        values ($1, $2, $3, coalesce($4, false), $5, $6)
+        returning id, category_name, parent_id, image_url, featured, short_desc, long_desc
         `,
-        [input.categoryName, input.parentId === "0" ? null : input.parentId, input.imageUrl ?? null, input.featured ?? null]
+        [
+          input.categoryName,
+          input.parentId === "0" ? null : input.parentId,
+          input.imageUrl ?? null,
+          input.featured ?? null,
+          input.shortDesc ?? null,
+          input.longDesc ?? null
+        ]
       );
 
       const row = created.rows[0];
@@ -39,6 +50,8 @@ export class PgCategoryRepository implements CategoryRepository {
         categoryName: row.category_name,
         imageUrl: row.image_url,
         featured: row.featured,
+        shortDesc: row.short_desc,
+        longDesc: row.long_desc,
         parentId: row.parent_id ?? "0"
       };
     } catch (err) {
@@ -51,7 +64,7 @@ export class PgCategoryRepository implements CategoryRepository {
 
   async update(
     id: string,
-    input: { categoryName?: string; imageUrl?: string; featured?: boolean; parentId?: string }
+    input: { categoryName?: string; imageUrl?: string; featured?: boolean; shortDesc?: string; longDesc?: string; parentId?: string }
   ): Promise<CategoryWithParent | null> {
     const res = await this.db.query<{
       id: string;
@@ -59,6 +72,8 @@ export class PgCategoryRepository implements CategoryRepository {
       image_url: string | null;
       featured: boolean;
       parent_id: string | null;
+      short_desc: string | null;
+      long_desc: string | null;
     }>(
       `
       update ecom.categories
@@ -66,16 +81,26 @@ export class PgCategoryRepository implements CategoryRepository {
         category_name = coalesce($2, category_name),
         image_url = coalesce($3, image_url),
         featured = coalesce($4, featured),
+        short_desc = coalesce($5, short_desc),
+        long_desc = coalesce($6, long_desc),
         parent_id = case
-          when $5 is null then parent_id
-          when $5 = '0' then null
-          else $5::uuid
+          when $7 is null then parent_id
+          when $7 = '0' then null
+          else $7::uuid
         end,
         updated_at = now()
       where id = $1
-      returning id, category_name, parent_id, image_url, featured
+      returning id, category_name, parent_id, image_url, featured, short_desc, long_desc
       `,
-      [id, input.categoryName ?? null, input.imageUrl ?? null, input.featured ?? null, input.parentId ?? null]
+      [
+        id,
+        input.categoryName ?? null,
+        input.imageUrl ?? null,
+        input.featured ?? null,
+        input.shortDesc ?? null,
+        input.longDesc ?? null,
+        input.parentId ?? null
+      ]
     );
 
     const row = res.rows[0];
@@ -85,6 +110,8 @@ export class PgCategoryRepository implements CategoryRepository {
       categoryName: row.category_name,
       imageUrl: row.image_url,
       featured: row.featured,
+      shortDesc: row.short_desc,
+      longDesc: row.long_desc,
       parentId: row.parent_id ?? "0"
     };
   }
@@ -95,11 +122,20 @@ export class PgCategoryRepository implements CategoryRepository {
       category_name: string;
       image_url: string | null;
       featured: boolean;
-    }>("select id, category_name, image_url, featured from ecom.categories where id = $1", [id]);
+      short_desc: string | null;
+      long_desc: string | null;
+    }>("select id, category_name, image_url, featured, short_desc, long_desc from ecom.categories where id = $1", [id]);
 
     const row = res.rows[0];
     if (!row) return null;
-    return { id: row.id, categoryName: row.category_name, imageUrl: row.image_url, featured: row.featured };
+    return {
+      id: row.id,
+      categoryName: row.category_name,
+      imageUrl: row.image_url,
+      featured: row.featured,
+      shortDesc: row.short_desc,
+      longDesc: row.long_desc
+    };
   }
 
   async findAllByName(categoryName: string): Promise<Category[]> {
@@ -108,12 +144,21 @@ export class PgCategoryRepository implements CategoryRepository {
       category_name: string;
       image_url: string | null;
       featured: boolean;
+      short_desc: string | null;
+      long_desc: string | null;
     }>(
-      "select id, category_name, image_url, featured from ecom.categories where lower(category_name) = lower($1) order by category_name asc",
+      "select id, category_name, image_url, featured, short_desc, long_desc from ecom.categories where lower(category_name) = lower($1) order by category_name asc",
       [categoryName]
     );
 
-    return res.rows.map((r) => ({ id: r.id, categoryName: r.category_name, imageUrl: r.image_url, featured: r.featured }));
+    return res.rows.map((r) => ({
+      id: r.id,
+      categoryName: r.category_name,
+      imageUrl: r.image_url,
+      featured: r.featured,
+      shortDesc: r.short_desc,
+      longDesc: r.long_desc
+    }));
   }
 
   async listWithParents(): Promise<CategoryWithParent[]> {
@@ -123,6 +168,8 @@ export class PgCategoryRepository implements CategoryRepository {
       image_url: string | null;
       featured: boolean;
       parent_id: string | null;
+      short_desc: string | null;
+      long_desc: string | null;
     }>(
       `
       select
@@ -130,6 +177,8 @@ export class PgCategoryRepository implements CategoryRepository {
         c.category_name,
         c.image_url,
         c.featured,
+        c.short_desc,
+        c.long_desc,
         c.parent_id
       from ecom.categories c
       order by c.category_name asc
@@ -141,6 +190,8 @@ export class PgCategoryRepository implements CategoryRepository {
       categoryName: r.category_name,
       imageUrl: r.image_url,
       featured: r.featured,
+      shortDesc: r.short_desc,
+      longDesc: r.long_desc,
       parentId: r.parent_id ?? "0"
     }));
   }

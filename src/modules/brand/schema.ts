@@ -15,17 +15,27 @@ export const brandIdParamSchema = z.object({
 export const createBrandBodySchema = z.object({
   brandName: z.string().min(1).max(200),
   imageUrl: imageUrlSchema.optional(),
-  featured: z.boolean().optional()
+  featured: z.boolean().optional(),
+  shortDesc: z.string().max(500).optional(),
+  longDesc: z.string().max(5000).optional()
 });
 
 export const updateBrandBodySchema = z
   .object({
     brandName: z.string().min(1).max(200).optional(),
     imageUrl: imageUrlSchema.optional(),
-    featured: z.boolean().optional()
+    featured: z.boolean().optional(),
+    shortDesc: z.string().max(500).optional(),
+    longDesc: z.string().max(5000).optional()
   })
   .superRefine((v, ctx) => {
-    if (v.brandName === undefined && v.imageUrl === undefined && v.featured === undefined) {
+    if (
+      v.brandName === undefined &&
+      v.imageUrl === undefined &&
+      v.featured === undefined &&
+      v.shortDesc === undefined &&
+      v.longDesc === undefined
+    ) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Provide at least one field to update" });
     }
   });

@@ -49,6 +49,8 @@ export const createCategoryBodySchema = z.object({
   categoryName: z.string().min(1).max(200),
   imageUrl: imageUrlSchema.optional(),
   featured: z.boolean().optional(),
+  shortDesc: z.string().max(500).optional(),
+  longDesc: z.string().max(5000).optional(),
   parentId: z.union([z.literal("0"), z.string().uuid()]).optional(),
   parentCategory: z.string().min(1).max(200).optional()
 }).refine((v) => !(v.parentId && v.parentCategory), {
@@ -61,6 +63,8 @@ export const updateCategoryBodySchema = z
     categoryName: z.string().min(1).max(200).optional(),
     imageUrl: imageUrlSchema.optional(),
     featured: z.boolean().optional(),
+    shortDesc: z.string().max(500).optional(),
+    longDesc: z.string().max(5000).optional(),
     parentId: z.union([z.literal("0"), z.string().uuid()]).optional(),
     parentCategory: z.string().min(1).max(200).optional()
   })
@@ -73,6 +77,8 @@ export const updateCategoryBodySchema = z
       v.categoryName !== undefined ||
       v.imageUrl !== undefined ||
       v.featured !== undefined ||
+      v.shortDesc !== undefined ||
+      v.longDesc !== undefined ||
       v.parentId !== undefined ||
       v.parentCategory !== undefined;
     if (!hasAny) {
