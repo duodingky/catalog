@@ -10,7 +10,7 @@ import {
   createProductBodySchema,
   listProductsQuerySchema,
   productIdParamSchema,
-  productSearchQuerySchema,
+  productSearchBodySchema,
   updateProductBodySchema
 } from "./schema.js";
 
@@ -29,11 +29,11 @@ export const registerProductRoutes: FastifyPluginAsync = async (app) => {
     }
   );
 
-  app.get(
+  app.post(
     "/search",
     { preValidation: [app.authenticate, app.requirePermission("read")] },
     async (req) => {
-      const { q, category, brand } = productSearchQuerySchema.parse(req.query);
+      const { q, category, brand } = productSearchBodySchema.parse(req.body);
       const data = await service.search({ q, category, brand });
       return {
         data,

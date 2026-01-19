@@ -89,7 +89,7 @@ export const updateProductBodySchema = z
     }
   });
 
-export const productSearchQuerySchema = z
+export const productSearchBodySchema = z
   .object({
     q: z.string().min(1).max(200).optional(),
     query: z.string().min(1).max(200).optional(),
