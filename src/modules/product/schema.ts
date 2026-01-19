@@ -89,20 +89,33 @@ export const updateProductBodySchema = z
     }
   });
 
-export const productSearchQuerySchema = z
+export const productSearchBodySchema = z
   .object({
     q: z.string().min(1).max(200).optional(),
     query: z.string().min(1).max(200).optional(),
-    category: z.string().min(1).max(200).optional(),
-    brand: z.string().min(1).max(200).optional()
+    category: z
+      .union([z.string().min(1).max(200), z.array(z.string().min(1).max(200))])
+      .optional(),
+    brand: z
+      .union([z.string().min(1).max(200), z.array(z.string().min(1).max(200))])
+      .optional()
   })
-  .transform((v) => ({
-    q: (v.q ?? v.query ?? "").trim(),
-    category: (v.category ?? "").trim(),
-    brand: (v.brand ?? "").trim()
-  }))
+  .transform((v) => {
+    const categoryValues = (Array.isArray(v.category) ? v.category : v.category ? [v.category] : [])
+      .map((value) => value.trim())
+      .filter((value) => value.length > 0);
+    const brandValues = (Array.isArray(v.brand) ? v.brand : v.brand ? [v.brand] : [])
+      .map((value) => value.trim())
+      .filter((value) => value.length > 0);
+
+    return {
+      q: (v.q ?? v.query ?? "").trim(),
+      category: categoryValues,
+      brand: brandValues
+    };
+  })
   .superRefine((v, ctx) => {
-    const hasAny = Boolean(v.q || v.category || v.brand);
+    const hasAny = Boolean(v.q || v.category.length > 0 || v.brand.length > 0);
     if (!hasAny) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

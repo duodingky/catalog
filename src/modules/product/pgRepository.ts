@@ -375,10 +375,10 @@ export class PgProductRepository implements ProductRepository {
     }));
   }
 
-  async search(input: { q?: string; categoryIds?: string[]; brandId?: string }): Promise<Product[]> {
+  async search(input: { q?: string; categoryIds?: string[]; brandIds?: string[] }): Promise<Product[]> {
     const q = input.q ? `%${input.q}%` : null;
     const categoryIds = input.categoryIds && input.categoryIds.length > 0 ? input.categoryIds : null;
-    const brandId = input.brandId ?? null;
+    const brandIds = input.brandIds && input.brandIds.length > 0 ? input.brandIds : null;
     const res = await this.db.query<{
       id: string;
       product_name: string;
@@ -418,10 +418,10 @@ export class PgProductRepository implements ProductRepository {
           or b.brand_name ilike $1
         )
         and ($2::uuid[] is null or p.category_id = any($2::uuid[]))
-        and ($3::uuid is null or p.brand_id = $3::uuid)
+        and ($3::uuid[] is null or p.brand_id = any($3::uuid[]))
       order by p.product_name asc
       `,
-      [q, categoryIds, brandId]
+      [q, categoryIds, brandIds]
     );
 
     return res.rows.map((row) => ({
