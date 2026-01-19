@@ -94,15 +94,23 @@ export const productSearchBodySchema = z
     q: z.string().min(1).max(200).optional(),
     query: z.string().min(1).max(200).optional(),
     category: z.string().min(1).max(200).optional(),
-    brand: z.string().min(1).max(200).optional()
+    brand: z
+      .union([z.string().min(1).max(200), z.array(z.string().min(1).max(200))])
+      .optional()
   })
-  .transform((v) => ({
-    q: (v.q ?? v.query ?? "").trim(),
-    category: (v.category ?? "").trim(),
-    brand: (v.brand ?? "").trim()
-  }))
+  .transform((v) => {
+    const brandValues = (Array.isArray(v.brand) ? v.brand : v.brand ? [v.brand] : [])
+      .map((value) => value.trim())
+      .filter((value) => value.length > 0);
+
+    return {
+      q: (v.q ?? v.query ?? "").trim(),
+      category: (v.category ?? "").trim(),
+      brand: brandValues
+    };
+  })
   .superRefine((v, ctx) => {
-    const hasAny = Boolean(v.q || v.category || v.brand);
+    const hasAny = Boolean(v.q || v.category || v.brand.length > 0);
     if (!hasAny) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

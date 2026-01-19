@@ -156,10 +156,13 @@ export class ProductService {
     return await this.repo.listByCategoryId(categoryId);
   }
 
-  async search(input: { q?: string; category?: string; brand?: string }): Promise<Product[]> {
+  async search(input: { q?: string; category?: string; brand?: string[] }): Promise<Product[]> {
     const q = input.q?.trim() ? input.q.trim() : undefined;
     const category = input.category?.trim() ? input.category.trim() : undefined;
-    const brand = input.brand?.trim() ? input.brand.trim() : undefined;
+    const brandValues = input.brand
+      ?.map((value) => value.trim())
+      .filter((value) => value.length > 0);
+    const brandFilters = brandValues && brandValues.length > 0 ? [...new Set(brandValues)] : undefined;
 
     let categoryIds: string[] | undefined;
     if (category) {
@@ -178,20 +181,24 @@ export class ProductService {
       categoryIds = await this.categoryRepo.findDescendantIds([...new Set(rootIds)]);
     }
 
-    let brandId: string | undefined;
-    if (brand) {
-      if (UUID_RE.test(brand)) {
-        const found = await this.brandRepo.findById(brand);
-        if (!found) throw new BadRequestError("Invalid brand");
-        brandId = brand;
-      } else {
-        const found = await this.brandRepo.findByName(brand);
-        if (!found) throw new BadRequestError("Invalid brand");
-        brandId = found.id;
+    let brandIds: string[] | undefined;
+    if (brandFilters) {
+      const resolved = new Set<string>();
+      for (const brand of brandFilters) {
+        if (UUID_RE.test(brand)) {
+          const found = await this.brandRepo.findById(brand);
+          if (!found) throw new BadRequestError("Invalid brand");
+          resolved.add(brand);
+        } else {
+          const found = await this.brandRepo.findByName(brand);
+          if (!found) throw new BadRequestError("Invalid brand");
+          resolved.add(found.id);
+        }
       }
+      brandIds = resolved.size > 0 ? [...resolved] : undefined;
     }
 
-    return await this.repo.search({ q, categoryIds, brandId });
+    return await this.repo.search({ q, categoryIds, brandIds });
   }
 }
 
