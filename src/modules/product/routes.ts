@@ -11,6 +11,7 @@ import {
   listProductsQuerySchema,
   productIdParamSchema,
   productSearchBodySchema,
+  productSearchQuerySchema,
   updateProductBodySchema
 } from "./schema.js";
 
@@ -34,12 +35,13 @@ export const registerProductRoutes: FastifyPluginAsync = async (app) => {
     { preValidation: [app.authenticate, app.requirePermission("read")] },
     async (req) => {
       const { q, category, brand } = productSearchBodySchema.parse(req.body);
-      const data = await service.search({ q, category, brand });
+      const { start, limit } = productSearchQuerySchema.parse(req.query);
+      const { data, totalRecord } = await service.search({ q, category, brand, start, limit });
       return {
         data,
         meta: buildPagingMeta({
-          totalRecord: data.length,
-          startRecord: 0,
+          totalRecord,
+          startRecord: start,
           returnedCount: data.length
         })
       };

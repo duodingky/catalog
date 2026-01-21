@@ -1,6 +1,7 @@
 export type Product = {
   id: string;
   productName: string;
+  sku: string | null;
   categoryId: string;
   categoryName: string;
   brandId: string;

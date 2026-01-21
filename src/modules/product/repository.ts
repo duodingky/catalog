@@ -2,6 +2,7 @@ import type { Product } from "./types.js";
 
 export type CreateProductInput = {
   productName: string;
+  sku?: string;
   categoryId: string;
   brandId: string;
   price: string;
@@ -26,6 +27,6 @@ export interface ProductRepository {
   list(): Promise<Product[]>;
   listPaged(input: { start: number; limit: number; featured?: boolean }): Promise<{ data: Product[]; totalRecord: number }>;
   listByCategoryId(categoryId: string): Promise<Product[]>;
-  search(input: { q?: string; categoryIds?: string[]; brandIds?: string[] }): Promise<Product[]>;
+  search(input: { q?: string; categoryIds?: string[]; brandIds?: string[]; start: number; limit: number }): Promise<{ data: Product[]; totalRecord: number }>;
 }
 

@@ -11,7 +11,7 @@ This is a starter Fastify REST API that follows a simple SOLID-ish structure:
 
 - **Category**: `id`, `categoryName`
 - **Brand**: `id`, `brandName`
-- **Product**: `id`, `productName`, `categoryId`, `brandId`, `price`, `shortDesc`, `longDesc`
+- **Product**: `id`, `productName`, `sku`, `categoryId`, `brandId`, `price`, `shortDesc`, `longDesc`
 
 Database:
 - **Database name**: `ecom`
@@ -72,6 +72,7 @@ API runs on `http://localhost:3000`.
   - `GET /products/:id`
   - `POST /products` body:
     - `productName` (string)
+    - `sku` (optional string)
     - `categoryId` (uuid)
     - `brandId` (uuid)
     - `price` (number or string, up to 2 decimals)

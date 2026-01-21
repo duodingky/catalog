@@ -70,6 +70,7 @@ export class ProductService {
       });
       return await this.repo.create({
         productName: input.productName,
+        sku: input.sku,
         categoryId: input.categoryId,
         brandId,
         price: input.price,
@@ -113,6 +114,7 @@ export class ProductService {
 
       const updateInput: UpdateProductInput = {
         productName: input.productName,
+        sku: input.sku,
         categoryId: input.categoryId,
         price: input.price,
         imageUrl: input.imageUrl,
@@ -156,7 +158,7 @@ export class ProductService {
     return await this.repo.listByCategoryId(categoryId);
   }
 
-  async search(input: { q?: string; category?: string[]; brand?: string[] }): Promise<Product[]> {
+  async search(input: { q?: string; category?: string[]; brand?: string[]; start: number; limit: number }): Promise<{ data: Product[]; totalRecord: number }> {
     const q = input.q?.trim() ? input.q.trim() : undefined;
     const categoryValues = input.category
       ?.map((value) => value.trim())
@@ -203,7 +205,7 @@ export class ProductService {
       brandIds = resolved.size > 0 ? [...resolved] : undefined;
     }
 
-    return await this.repo.search({ q, categoryIds, brandIds });
+    return await this.repo.search({ q, categoryIds, brandIds, start: input.start, limit: input.limit });
   }
 }
 

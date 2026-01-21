@@ -40,6 +40,7 @@ const brandFieldsSchema = z
 export const createProductBodySchema = z
   .object({
     productName: z.string().min(1).max(200),
+    sku: z.string().min(1).max(200).optional(),
     categoryId: z.string().uuid(),
     price: priceSchema,
     imageUrl: imageUrlSchema.optional(),
@@ -61,6 +62,7 @@ export const createProductBodySchema = z
 export const updateProductBodySchema = z
   .object({
     productName: z.string().min(1).max(200).optional(),
+    sku: z.string().min(1).max(200).optional(),
     categoryId: z.string().uuid().optional(),
     price: priceSchema.optional(),
     imageUrl: imageUrlSchema.optional(),
@@ -72,6 +74,7 @@ export const updateProductBodySchema = z
   .superRefine((v, ctx) => {
     const hasAny =
       v.productName !== undefined ||
+      v.sku !== undefined ||
       v.categoryId !== undefined ||
       v.price !== undefined ||
       v.imageUrl !== undefined ||
@@ -91,8 +94,8 @@ export const updateProductBodySchema = z
 
 export const productSearchBodySchema = z
   .object({
-    q: z.string().min(1).max(200).optional(),
-    query: z.string().min(1).max(200).optional(),
+    q: z.string().max(200).optional(),
+    query: z.string().max(200).optional(),
     category: z
       .union([z.string().min(1).max(200), z.array(z.string().min(1).max(200))])
       .optional(),
@@ -101,6 +104,7 @@ export const productSearchBodySchema = z
       .optional()
   })
   .transform((v) => {
+    const hasQueryKey = v.q !== undefined || v.query !== undefined;
     const categoryValues = (Array.isArray(v.category) ? v.category : v.category ? [v.category] : [])
       .map((value) => value.trim())
       .filter((value) => value.length > 0);
@@ -111,17 +115,33 @@ export const productSearchBodySchema = z
     return {
       q: (v.q ?? v.query ?? "").trim(),
       category: categoryValues,
-      brand: brandValues
+      brand: brandValues,
+      hasQueryKey
     };
   })
   .superRefine((v, ctx) => {
     const hasAny = Boolean(v.q || v.category.length > 0 || v.brand.length > 0);
-    if (!hasAny) {
+    if (!hasAny && !v.hasQueryKey) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Provide at least one of q, category, or brand"
       });
     }
+  })
+  .transform((v) => ({
+    q: v.q,
+    category: v.category,
+    brand: v.brand
+  }));
+
+export const productSearchQuerySchema = paginationQueryInputSchema
+  .transform((v) => ({
+    limit: v.limit ?? 10,
+    start: v.start ?? v.star ?? 0
+  }))
+  .superRefine((v, ctx) => {
+    if (v.limit < 0) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["limit"], message: "limit must be >= 0" });
+    if (v.start < 0) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["start"], message: "start must be >= 0" });
   });
 
 const booleanQuerySchema = z.preprocess((v) => {
