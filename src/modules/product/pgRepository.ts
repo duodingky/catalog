@@ -396,10 +396,34 @@ export class PgProductRepository implements ProductRepository {
     }));
   }
 
-  async search(input: { q?: string; categoryIds?: string[]; brandIds?: string[] }): Promise<Product[]> {
+  async search(input: { q?: string; categoryIds?: string[]; brandIds?: string[]; start: number; limit: number }): Promise<{ data: Product[]; totalRecord: number }> {
     const q = input.q ? `%${input.q}%` : null;
     const categoryIds = input.categoryIds && input.categoryIds.length > 0 ? input.categoryIds : null;
     const brandIds = input.brandIds && input.brandIds.length > 0 ? input.brandIds : null;
+
+    const countRes = await this.db.query<{ total: string }>(
+      `
+      select count(*) as total
+      from ecom.products p
+      join ecom.categories c on c.id = p.category_id
+      join ecom.brands b on b.id = p.brand_id
+      where
+        (
+          $1::text is null
+          or p.product_name ilike $1
+          or coalesce(p.sku, '') ilike $1
+          or coalesce(p.short_desc, '') ilike $1
+          or coalesce(p.long_desc, '') ilike $1
+          or c.category_name ilike $1
+          or b.brand_name ilike $1
+        )
+        and ($2::uuid[] is null or p.category_id = any($2::uuid[]))
+        and ($3::uuid[] is null or p.brand_id = any($3::uuid[]))
+      `,
+      [q, categoryIds, brandIds]
+    );
+    const totalRecord = Number(countRes.rows[0]?.total ?? 0);
+
     const res = await this.db.query<{
       id: string;
       product_name: string;
@@ -444,24 +468,29 @@ export class PgProductRepository implements ProductRepository {
         and ($2::uuid[] is null or p.category_id = any($2::uuid[]))
         and ($3::uuid[] is null or p.brand_id = any($3::uuid[]))
       order by p.product_name asc
+      offset $4
+      limit $5
       `,
-      [q, categoryIds, brandIds]
+      [q, categoryIds, brandIds, input.start, input.limit]
     );
 
-    return res.rows.map((row) => ({
-      id: row.id,
-      productName: row.product_name,
-      sku: row.sku,
-      categoryId: row.category_id,
-      categoryName: row.category_name,
-      brandId: row.brand_id,
-      brandName: row.brand_name,
-      price: row.price,
-      imageUrl: row.image_url,
-      featured: row.featured,
-      shortDesc: row.short_desc,
-      longDesc: row.long_desc
-    }));
+    return {
+      totalRecord,
+      data: res.rows.map((row) => ({
+        id: row.id,
+        productName: row.product_name,
+        sku: row.sku,
+        categoryId: row.category_id,
+        categoryName: row.category_name,
+        brandId: row.brand_id,
+        brandName: row.brand_name,
+        price: row.price,
+        imageUrl: row.image_url,
+        featured: row.featured,
+        shortDesc: row.short_desc,
+        longDesc: row.long_desc
+      }))
+    };
   }
 }
 
