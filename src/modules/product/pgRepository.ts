@@ -32,6 +32,7 @@ export class PgProductRepository implements ProductRepository {
     const res = await this.db.query<{
       id: string;
       product_name: string;
+      sku: string | null;
       category_id: string;
       category_name: string;
       brand_id: string;
@@ -43,11 +44,12 @@ export class PgProductRepository implements ProductRepository {
       long_desc: string | null;
     }>(
       `
-      insert into ecom.products (product_name, category_id, brand_id, price, image_url, featured, short_desc, long_desc)
-      values ($1, $2, $3, $4, $5, coalesce($6, false), $7, $8)
+      insert into ecom.products (product_name, sku, category_id, brand_id, price, image_url, featured, short_desc, long_desc)
+      values ($1, $2, $3, $4, $5, $6, coalesce($7, false), $8, $9)
       returning
         id,
         product_name,
+        sku,
         category_id,
         (select c.category_name from ecom.categories c where c.id = category_id) as category_name,
         brand_id,
@@ -60,6 +62,7 @@ export class PgProductRepository implements ProductRepository {
       `,
       [
         input.productName,
+        input.sku ?? null,
         input.categoryId,
         input.brandId,
         input.price,
@@ -75,6 +78,7 @@ export class PgProductRepository implements ProductRepository {
     return {
       id: row.id,
       productName: row.product_name,
+      sku: row.sku,
       categoryId: row.category_id,
       categoryName: row.category_name,
       brandId: row.brand_id,
@@ -91,6 +95,7 @@ export class PgProductRepository implements ProductRepository {
     const res = await this.db.query<{
       id: string;
       product_name: string;
+      sku: string | null;
       category_id: string;
       category_name: string;
       brand_id: string;
@@ -105,18 +110,20 @@ export class PgProductRepository implements ProductRepository {
       update ecom.products
       set
         product_name = coalesce($2, product_name),
-        category_id = coalesce($3, category_id),
-        brand_id = coalesce($4, brand_id),
-        price = coalesce($5, price),
-        image_url = coalesce($6, image_url),
-        featured = coalesce($7, featured),
-        short_desc = coalesce($8, short_desc),
-        long_desc = coalesce($9, long_desc),
+        sku = coalesce($3, sku),
+        category_id = coalesce($4, category_id),
+        brand_id = coalesce($5, brand_id),
+        price = coalesce($6, price),
+        image_url = coalesce($7, image_url),
+        featured = coalesce($8, featured),
+        short_desc = coalesce($9, short_desc),
+        long_desc = coalesce($10, long_desc),
         updated_at = now()
       where id = $1
       returning
         id,
         product_name,
+        sku,
         category_id,
         (select c.category_name from ecom.categories c where c.id = category_id) as category_name,
         brand_id,
@@ -130,6 +137,7 @@ export class PgProductRepository implements ProductRepository {
       [
         id,
         input.productName ?? null,
+        input.sku ?? null,
         input.categoryId ?? null,
         input.brandId ?? null,
         input.price ?? null,
@@ -145,6 +153,7 @@ export class PgProductRepository implements ProductRepository {
     return {
       id: row.id,
       productName: row.product_name,
+      sku: row.sku,
       categoryId: row.category_id,
       categoryName: row.category_name,
       brandId: row.brand_id,
@@ -161,6 +170,7 @@ export class PgProductRepository implements ProductRepository {
     const res = await this.db.query<{
       id: string;
       product_name: string;
+      sku: string | null;
       category_id: string;
       category_name: string;
       brand_id: string;
@@ -175,6 +185,7 @@ export class PgProductRepository implements ProductRepository {
       select
         p.id,
         p.product_name,
+        p.sku,
         p.category_id,
         c.category_name,
         p.brand_id,
@@ -197,6 +208,7 @@ export class PgProductRepository implements ProductRepository {
     return {
       id: row.id,
       productName: row.product_name,
+      sku: row.sku,
       categoryId: row.category_id,
       categoryName: row.category_name,
       brandId: row.brand_id,
@@ -213,6 +225,7 @@ export class PgProductRepository implements ProductRepository {
     const res = await this.db.query<{
       id: string;
       product_name: string;
+      sku: string | null;
       category_id: string;
       category_name: string;
       brand_id: string;
@@ -227,6 +240,7 @@ export class PgProductRepository implements ProductRepository {
       select
         p.id,
         p.product_name,
+        p.sku,
         p.category_id,
         c.category_name,
         p.brand_id,
@@ -246,6 +260,7 @@ export class PgProductRepository implements ProductRepository {
     return res.rows.map((row) => ({
       id: row.id,
       productName: row.product_name,
+      sku: row.sku,
       categoryId: row.category_id,
       categoryName: row.category_name,
       brandId: row.brand_id,
@@ -272,6 +287,7 @@ export class PgProductRepository implements ProductRepository {
     const res = await this.db.query<{
       id: string;
       product_name: string;
+      sku: string | null;
       category_id: string;
       category_name: string;
       brand_id: string;
@@ -286,6 +302,7 @@ export class PgProductRepository implements ProductRepository {
       select
         p.id,
         p.product_name,
+        p.sku,
         p.category_id,
         c.category_name,
         p.brand_id,
@@ -311,6 +328,7 @@ export class PgProductRepository implements ProductRepository {
       data: res.rows.map((row) => ({
         id: row.id,
         productName: row.product_name,
+        sku: row.sku,
         categoryId: row.category_id,
         categoryName: row.category_name,
         brandId: row.brand_id,
@@ -328,6 +346,7 @@ export class PgProductRepository implements ProductRepository {
     const res = await this.db.query<{
       id: string;
       product_name: string;
+      sku: string | null;
       category_id: string;
       category_name: string;
       brand_id: string;
@@ -342,6 +361,7 @@ export class PgProductRepository implements ProductRepository {
       select
         p.id,
         p.product_name,
+        p.sku,
         p.category_id,
         c.category_name,
         p.brand_id,
@@ -363,6 +383,7 @@ export class PgProductRepository implements ProductRepository {
     return res.rows.map((row) => ({
       id: row.id,
       productName: row.product_name,
+      sku: row.sku,
       categoryId: row.category_id,
       categoryName: row.category_name,
       brandId: row.brand_id,
@@ -382,6 +403,7 @@ export class PgProductRepository implements ProductRepository {
     const res = await this.db.query<{
       id: string;
       product_name: string;
+      sku: string | null;
       category_id: string;
       category_name: string;
       brand_id: string;
@@ -396,6 +418,7 @@ export class PgProductRepository implements ProductRepository {
       select
         p.id,
         p.product_name,
+        p.sku,
         p.category_id,
         c.category_name,
         p.brand_id,
@@ -412,6 +435,7 @@ export class PgProductRepository implements ProductRepository {
         (
           $1::text is null
           or p.product_name ilike $1
+          or coalesce(p.sku, '') ilike $1
           or coalesce(p.short_desc, '') ilike $1
           or coalesce(p.long_desc, '') ilike $1
           or c.category_name ilike $1
@@ -427,6 +451,7 @@ export class PgProductRepository implements ProductRepository {
     return res.rows.map((row) => ({
       id: row.id,
       productName: row.product_name,
+      sku: row.sku,
       categoryId: row.category_id,
       categoryName: row.category_name,
       brandId: row.brand_id,

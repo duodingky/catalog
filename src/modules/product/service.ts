@@ -70,6 +70,7 @@ export class ProductService {
       });
       return await this.repo.create({
         productName: input.productName,
+        sku: input.sku,
         categoryId: input.categoryId,
         brandId,
         price: input.price,
@@ -113,6 +114,7 @@ export class ProductService {
 
       const updateInput: UpdateProductInput = {
         productName: input.productName,
+        sku: input.sku,
         categoryId: input.categoryId,
         price: input.price,
         imageUrl: input.imageUrl,

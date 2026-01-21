@@ -2,6 +2,7 @@ import type { Product } from "./types.js";
 
 export type CreateProductInput = {
   productName: string;
+  sku?: string;
   categoryId: string;
   brandId: string;
   price: string;

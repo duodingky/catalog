@@ -40,6 +40,7 @@ const brandFieldsSchema = z
 export const createProductBodySchema = z
   .object({
     productName: z.string().min(1).max(200),
+    sku: z.string().min(1).max(200).optional(),
     categoryId: z.string().uuid(),
     price: priceSchema,
     imageUrl: imageUrlSchema.optional(),
@@ -61,6 +62,7 @@ export const createProductBodySchema = z
 export const updateProductBodySchema = z
   .object({
     productName: z.string().min(1).max(200).optional(),
+    sku: z.string().min(1).max(200).optional(),
     categoryId: z.string().uuid().optional(),
     price: priceSchema.optional(),
     imageUrl: imageUrlSchema.optional(),
@@ -72,6 +74,7 @@ export const updateProductBodySchema = z
   .superRefine((v, ctx) => {
     const hasAny =
       v.productName !== undefined ||
+      v.sku !== undefined ||
       v.categoryId !== undefined ||
       v.price !== undefined ||
       v.imageUrl !== undefined ||
