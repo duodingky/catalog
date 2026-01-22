@@ -396,10 +396,11 @@ export class PgProductRepository implements ProductRepository {
     }));
   }
 
-  async search(input: { q?: string; categoryIds?: string[]; brandIds?: string[]; start: number; limit: number }): Promise<{ data: Product[]; totalRecord: number }> {
+  async search(input: { q?: string; categoryIds?: string[]; brandIds?: string[]; productIds?: string[]; start: number; limit: number }): Promise<{ data: Product[]; totalRecord: number }> {
     const q = input.q ? `%${input.q}%` : null;
     const categoryIds = input.categoryIds && input.categoryIds.length > 0 ? input.categoryIds : null;
     const brandIds = input.brandIds && input.brandIds.length > 0 ? input.brandIds : null;
+    const productIds = input.productIds && input.productIds.length > 0 ? input.productIds : null;
 
     const countRes = await this.db.query<{ total: string }>(
       `
@@ -419,8 +420,9 @@ export class PgProductRepository implements ProductRepository {
         )
         and ($2::uuid[] is null or p.category_id = any($2::uuid[]))
         and ($3::uuid[] is null or p.brand_id = any($3::uuid[]))
+        and ($4::uuid[] is null or p.id = any($4::uuid[]))
       `,
-      [q, categoryIds, brandIds]
+      [q, categoryIds, brandIds, productIds]
     );
     const totalRecord = Number(countRes.rows[0]?.total ?? 0);
 
@@ -467,11 +469,12 @@ export class PgProductRepository implements ProductRepository {
         )
         and ($2::uuid[] is null or p.category_id = any($2::uuid[]))
         and ($3::uuid[] is null or p.brand_id = any($3::uuid[]))
+        and ($4::uuid[] is null or p.id = any($4::uuid[]))
       order by p.product_name asc
-      offset $4
-      limit $5
+      offset $5
+      limit $6
       `,
-      [q, categoryIds, brandIds, input.start, input.limit]
+      [q, categoryIds, brandIds, productIds, input.start, input.limit]
     );
 
     return {

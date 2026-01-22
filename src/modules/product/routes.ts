@@ -34,9 +34,9 @@ export const registerProductRoutes: FastifyPluginAsync = async (app) => {
     "/search",
     { preValidation: [app.authenticate, app.requirePermission("read")] },
     async (req) => {
-      const { q, category, brand } = productSearchBodySchema.parse(req.body);
+      const { q, category, brand, id } = productSearchBodySchema.parse(req.body);
       const { start, limit } = productSearchQuerySchema.parse(req.query);
-      const { data, totalRecord } = await service.search({ q, category, brand, start, limit });
+      const { data, totalRecord } = await service.search({ q, category, brand, ids: id, start, limit });
       return {
         data,
         meta: buildPagingMeta({

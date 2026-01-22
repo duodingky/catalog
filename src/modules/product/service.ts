@@ -158,8 +158,12 @@ export class ProductService {
     return await this.repo.listByCategoryId(categoryId);
   }
 
-  async search(input: { q?: string; category?: string[]; brand?: string[]; start: number; limit: number }): Promise<{ data: Product[]; totalRecord: number }> {
+  async search(input: { q?: string; category?: string[]; brand?: string[]; ids?: string[]; start: number; limit: number }): Promise<{ data: Product[]; totalRecord: number }> {
     const q = input.q?.trim() ? input.q.trim() : undefined;
+    const idValues = input.ids
+      ?.map((value) => value.trim())
+      .filter((value) => value.length > 0);
+    const productIds = idValues && idValues.length > 0 ? [...new Set(idValues)] : undefined;
     const categoryValues = input.category
       ?.map((value) => value.trim())
       .filter((value) => value.length > 0);
@@ -205,7 +209,14 @@ export class ProductService {
       brandIds = resolved.size > 0 ? [...resolved] : undefined;
     }
 
-    return await this.repo.search({ q, categoryIds, brandIds, start: input.start, limit: input.limit });
+    return await this.repo.search({
+      q,
+      categoryIds,
+      brandIds,
+      productIds,
+      start: input.start,
+      limit: input.limit
+    });
   }
 }
 

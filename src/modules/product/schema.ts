@@ -101,7 +101,8 @@ export const productSearchBodySchema = z
       .optional(),
     brand: z
       .union([z.string().min(1).max(200), z.array(z.string().min(1).max(200))])
-      .optional()
+      .optional(),
+    id: z.union([z.string().uuid(), z.array(z.string().uuid()).min(1)]).optional()
   })
   .transform((v) => {
     const hasQueryKey = v.q !== undefined || v.query !== undefined;
@@ -111,27 +112,32 @@ export const productSearchBodySchema = z
     const brandValues = (Array.isArray(v.brand) ? v.brand : v.brand ? [v.brand] : [])
       .map((value) => value.trim())
       .filter((value) => value.length > 0);
+    const idValues = (Array.isArray(v.id) ? v.id : v.id ? [v.id] : [])
+      .map((value) => value.trim())
+      .filter((value) => value.length > 0);
 
     return {
       q: (v.q ?? v.query ?? "").trim(),
       category: categoryValues,
       brand: brandValues,
+      id: idValues,
       hasQueryKey
     };
   })
   .superRefine((v, ctx) => {
-    const hasAny = Boolean(v.q || v.category.length > 0 || v.brand.length > 0);
+    const hasAny = Boolean(v.q || v.category.length > 0 || v.brand.length > 0 || v.id.length > 0);
     if (!hasAny && !v.hasQueryKey) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Provide at least one of q, category, or brand"
+        message: "Provide at least one of q, category, brand, or id"
       });
     }
   })
   .transform((v) => ({
     q: v.q,
     category: v.category,
-    brand: v.brand
+    brand: v.brand,
+    id: v.id
   }));
 
 export const productSearchQuerySchema = paginationQueryInputSchema
